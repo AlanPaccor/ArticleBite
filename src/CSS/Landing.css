@@ -1,0 +1,21 @@
+.LandingContainer {
+  height: 100vh; /* Full height of the viewport */
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center;     /* Center vertically */
+}
+
+.uploadLButton {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;  /* Remove underline */
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.uploadLButton:hover {
+  background-color: #0056b3;
+}
