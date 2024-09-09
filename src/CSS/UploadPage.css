@@ -1,54 +1,40 @@
+/* Assuming this is in a file named UploadPage.css */
+
 .uPageContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-color: #f9f9f9;
-    padding: 20px;
+    margin: 20px;
+    font-family: Arial, sans-serif;
   }
   
   .uPageTitleContainer {
+    text-align: center;
     margin-bottom: 20px;
   }
   
-  .uPageTitleContainer h1 {
+  h1 {
     font-size: 24px;
-    text-align: center;
     color: #333;
   }
   
-  .formContainer {
-    width: 100%;
-    max-width: 600px;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
   
-  .inputField {
-    margin-bottom: 15px;
-  }
-  
-  .inputField label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  .inputField input {
-    width: 100%;
+  input[type="text"] {
     padding: 10px;
-    border: 1px solid #ddd;
+    width: 300px;
+    border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
   }
   
-  .submitButton {
-    display: block;
-    width: 100%;
-    padding: 10px;
+  button {
+    padding: 10px 20px;
     background-color: #007bff;
     color: #fff;
     border: none;
@@ -57,7 +43,39 @@
     cursor: pointer;
   }
   
-  .submitButton:hover {
-    background-color: #0056b3;
+  button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+  }
+  
+  .error {
+    color: #d9534f;
+    font-size: 14px;
+  }
+  
+  .notecards {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 800px;
+  }
+  
+  .notecard {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 10px;
+  }
+  
+  .notecard h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  .notecard p {
+    margin: 0;
+    font-size: 16px;
+    color: #555;
   }
   
