@@ -1,7 +1,8 @@
+import React from 'react'; // Import React explicitly
 import '../CSS/Landing.css';
-import LogoutButton from '../Components/LogoutButton.js';
+import LogoutButton from '../Components/LogoutButton';
 
-function Landing() {
+const Landing: React.FC = () => {
   return (
     <div className="LandingContainer">
       <a className='uploadLButton' href='/uploadlink'>

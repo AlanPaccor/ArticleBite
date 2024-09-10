@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { onAuthStateChanged, getAuth } from 'firebase/auth';
-import { useState, useEffect } from 'react';
+import { onAuthStateChanged, getAuth, User } from 'firebase/auth';
 
-const AuthRoute = ({ element: Element }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null); // null means loading
+interface AuthRouteProps {
+  element: React.ComponentType; // Component type for the route
+}
+
+const AuthRoute: React.FC<AuthRouteProps> = ({ element: Element }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // null means loading
   const location = useLocation();
   const auth = getAuth();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
       if (user) {
         setIsAuthenticated(true);
       } else {

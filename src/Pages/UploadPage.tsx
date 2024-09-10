@@ -1,26 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import axios from 'axios';
 import '../CSS/UploadPage.css';
 
-export default function UploadPage() {
-  const [link, setLink] = useState('');
-  const [notecards, setNotecards] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+interface Notecard {
+  objective: string;
+  explanation: string;
+}
 
-  const handleInputChange = (event) => {
+export default function UploadPage() {
+  const [link, setLink] = useState<string>('');
+  const [notecards, setNotecards] = useState<Notecard[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setLink(event.target.value);
   };
 
-  const parseNotecards = (text) => {
-    const cards = [];
+  const parseNotecards = (text: string): Notecard[] => {
+    const cards: Notecard[] = [];
     const objectiveRegex = /objective(\d+)={([^}]+)}/g;
     const answerRegex = /answer(\d+)={([^}]+)}/g;
 
-    const objectives = {};
-    const answers = {};
+    const objectives: { [key: string]: string } = {};
+    const answers: { [key: string]: string } = {};
 
-    let match;
+    let match: RegExpExecArray | null;
 
     // Extract objectives
     while ((match = objectiveRegex.exec(text)) !== null) {
@@ -45,14 +50,14 @@ export default function UploadPage() {
     return cards;
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setError('');
     setNotecards([]);
 
     try {
-      const response = await axios.post('http://localhost:3001/scrape', { url: link });
+      const response = await axios.post<{ summarizedText: string }>('http://localhost:3001/scrape', { url: link });
       const summarizedText = response.data.summarizedText;
       
       if (summarizedText) {
@@ -65,7 +70,7 @@ export default function UploadPage() {
       } else {
         setError('No summarized text received from the server.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching notes:', error);
       setError('Failed to fetch notes. Please try again.');
     } finally {

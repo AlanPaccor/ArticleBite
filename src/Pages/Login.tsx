@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase-config';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
-import '../CSS/Register.css';
+import '../CSS/Login.css';
 
-export default function Register() {
+export default function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -21,10 +20,10 @@ export default function Register() {
     setPasswordVisible(!passwordVisible);
   };
 
-  const handleRegister = async (event) => {
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       // Check previous location and redirect
       const previousLocation = localStorage.getItem('previousLocation');
       if (previousLocation === '/register' || previousLocation === '/login') {
@@ -34,38 +33,27 @@ export default function Register() {
       } else {
         navigate('/'); // Default redirect
       }
-    } catch (error) {
-      console.error('Error registering user:', error.message);
+    } catch (error: any) {
+      console.error('Error logging in:', error.message);
     }
   };
 
   return (
-    <div className='registerContainer'>
+    <div className='loginContainer'>
       <div className='logoNloginContainer'>
-        <div xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+        {/* Change the div to an SVG element */}
+        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-        </div>
-        <h1>Sign Up to ArticleBite</h1>
+        </svg>
+        <h1>Login to ArticleBite</h1>
         <h2>
-          Already Signed Up?
-          <a href='/login'>Login</a>
+          Not Signed Up?
+          <a href='/register'>Sign Up</a>
         </h2>
       </div>
 
-      <div className='signupInputFormContainer'>
-        <form onSubmit={handleRegister}>
-          <div className='inputField'>
-            <label htmlFor='fullName'>Full Name</label>
-            <input
-              type='text'
-              id='fullName'
-              placeholder='Enter your full name'
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </div>
-
+      <div className='loginInputFormContainer'>
+        <form onSubmit={handleLogin}>
           <div className='inputField'>
             <label htmlFor='email'>E-Mail</label>
             <input
@@ -96,7 +84,7 @@ export default function Register() {
           </div>
 
           <div className='submitButton'>
-            <button type='submit'>Sign Up</button>
+            <button type='submit'>Login</button>
           </div>
         </form>
       </div>

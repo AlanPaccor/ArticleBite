@@ -1,9 +1,11 @@
-const puppeteer = require('puppeteer');
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const axios = require('axios');
-require('dotenv').config();
+import puppeteer from 'puppeteer';
+import express, { Request, Response } from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
@@ -12,21 +14,22 @@ app.use(cors());
 // OpenAI API configuration
 console.log("API Key:", process.env.OPENAI_API_KEY ? "Successfully loaded" : "Not found");
 
-const openaiApiKey = process.env.OPENAI_API_KEY;
+const openaiApiKey: string | undefined = process.env.OPENAI_API_KEY;
 
 if (!openaiApiKey) {
   console.error("OpenAI API key is not set. Please check your .env file.");
   process.exit(1);
 }
 
-async function summarizeText(text) {
+// Function to summarize text using OpenAI API
+async function summarizeText(text: string): Promise<string> {
   try {
     console.log('Sending text to OpenAI API for summarization...');
     const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4',
       messages: [
-        {role: "system", content: "You are a helpful assistant that summarizes text into a notecard format."},
-        {role: "user", content: `Summarize the following text into a notecard format. Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}, .... Provide at least 3 objectives and answers don't forget to add the "{}":\n\n${text}`}
+        { role: "system", content: "You are a helpful assistant that summarizes text into a notecard format." },
+        { role: "user", content: `Summarize the following text into a notecard format. Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}, .... Provide at least 3 objectives and answers don't forget to add the "{}":\n\n${text}` }
       ],
       max_tokens: 500,
       temperature: 0.7
@@ -39,14 +42,14 @@ async function summarizeText(text) {
 
     console.log('Received response from OpenAI:', openaiResponse.data.choices[0].message.content);
     return openaiResponse.data.choices[0].message.content;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error summarizing text:', error.response ? error.response.data : error.message);
     throw new Error('OpenAI API request failed');
   }
 }
 
-
-app.post('/scrape', async (req, res) => {
+// Scraping route
+app.post('/scrape', async (req: Request, res: Response) => {
   const { url } = req.body;
 
   if (!url) {
@@ -73,12 +76,13 @@ app.post('/scrape', async (req, res) => {
 
     console.log('Summarization complete, sending response...');
     res.json({ summarizedText });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error scraping or summarizing data:', error.message);
     res.status(500).json({ error: 'Failed to scrape and summarize data' });
   }
 });
 
+// Start the server
 app.listen(3001, () => {
   console.log('Server running on port 3001');
 });
