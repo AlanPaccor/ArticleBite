@@ -12,8 +12,6 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // OpenAI API configuration
-console.log("API Key:", process.env.OPENAI_API_KEY ? "Successfully loaded" : "Not found");
-
 const openaiApiKey: string | undefined = process.env.OPENAI_API_KEY;
 
 if (!openaiApiKey) {
@@ -29,7 +27,7 @@ async function summarizeText(text: string): Promise<string> {
       model: 'gpt-4',
       messages: [
         { role: "system", content: "You are a helpful assistant that summarizes text into a notecard format." },
-        { role: "user", content: `Summarize the following text into a notecard format. Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}, .... Provide at least 3 objectives and answers don't forget to add the "{}":\n\n${text}` }
+        { role: "user", content: `Summarize the following text into a notecard format. Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}. Provide at least 3 objectives and answers, and don't forget to add the "{}":\n\n${text}` }
       ],
       max_tokens: 500,
       temperature: 0.7
@@ -40,8 +38,9 @@ async function summarizeText(text: string): Promise<string> {
       }
     });
 
-    console.log('Received response from OpenAI:', openaiResponse.data.choices[0].message.content);
-    return openaiResponse.data.choices[0].message.content;
+    const summary = openaiResponse.data.choices[0].message.content;
+    console.log('Received response from OpenAI:', summary);
+    return summary;
   } catch (error: any) {
     console.error('Error summarizing text:', error.response ? error.response.data : error.message);
     throw new Error('OpenAI API request failed');
@@ -59,7 +58,9 @@ app.post('/scrape', async (req: Request, res: Response) => {
 
   try {
     console.log('Launching Puppeteer...');
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Necessary for some environments like Docker
+    });
     const page = await browser.newPage();
 
     console.log(`Navigating to URL: ${url}`);
@@ -83,6 +84,7 @@ app.post('/scrape', async (req: Request, res: Response) => {
 });
 
 // Start the server
-app.listen(3001, () => {
-  console.log('Server running on port 3001');
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
