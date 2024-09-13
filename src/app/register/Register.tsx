@@ -26,7 +26,7 @@ export default function RegisterPage() {
     event.preventDefault();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      router.push('/');  // Redirect to home after successful registration
+      router.push('/userdashboard');  // Redirect to home after successful registration
     } catch (error: any) {
       console.error('Error registering user:', error.message);
     }

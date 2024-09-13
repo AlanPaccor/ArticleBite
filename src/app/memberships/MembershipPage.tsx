@@ -27,7 +27,7 @@ export const Membership = () => {
 
   const tiers = [
     {
-      title: "My Best Buy™",
+      title: "Basic",
       price: "Free",
       rating: 0,
       reviews: 0,
@@ -35,30 +35,28 @@ export const Membership = () => {
       includedFeatures: [0]
     },
     {
-      title: "My Best Buy Plus™",
+      title: "Pro",
       price: "$49.99/year*",
       rating: 4,
-      reviews: 16447,
       buttonText: "Add to Cart",
       includedFeatures: [0, 1, 2, 3, 4]
     },
     {
-      title: "My Best Buy Total™",
+      title: "Business",
       price: "$179.99/year*",
       rating: 4.5,
-      reviews: 21919,
       buttonText: "Add to Cart",
       includedFeatures: [0, 1, 2, 3, 4, 5, 6, 7, 8]
     }
   ];
 
   return (
-    <div className="bg-white min-h-screen"> {/* Added background color here */}
+    <div className=" min-h-screen"> {/* Added background color here */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-4 gap-4">
           <div className="col-span-1"></div>
           {tiers.map((tier, index) => (
-            <div key={index} className={`col-span-1 ${index === 2 ? 'bg-gray-100' : 'bg-white'} p-4 rounded-t-lg`}>
+            <div key={index} className={`col-span-1 ${index === 2 ? '' : ''} p-4 rounded-t-lg`}>
               <h2 className="text-xl font-bold mb-2">{tier.title}</h2>
               {tier.rating > 0 && <StarRating rating={tier.rating} reviews={tier.reviews} />}
               <p className="text-2xl font-bold my-4">{tier.price}</p>
@@ -73,20 +71,20 @@ export const Membership = () => {
           
           {features.map((feature, featureIndex) => (
             <React.Fragment key={featureIndex}>
-              <div className="col-span-1 p-4 border-t border-gray-200 bg-white">
+              <div className="col-span-1 p-4 border-t border-gray-400 ">
                 <p>{feature}</p>
               </div>
               {tiers.map((tier, tierIndex) => (
-                <div key={`${featureIndex}-${tierIndex}`} className={`col-span-1 p-4 border-t border-gray-200 ${tierIndex === 2 ? 'bg-gray-100' : 'bg-white'}`}>
+                <div key={`${featureIndex}-${tierIndex}`} className={`col-span-1 p-4 border-t border-gray-300 ${tierIndex === 2 ? '' : ''}`}>
                   {tier.includedFeatures.includes(featureIndex) && <FaCheck className="text-blue-600" />}
                 </div>
               ))}
             </React.Fragment>
           ))}
           
-          <div className="col-span-1 p-4 border-t border-gray-200 bg-white"></div>
+          <div className="col-span-1 p-4 border-t border-gray-200"></div>
           {tiers.map((_, index) => (
-            <div key={index} className={`col-span-1 p-4 border-t border-gray-200 ${index === 2 ? 'bg-gray-100' : 'bg-white'}`}>
+            <div key={index} className={`col-span-1 p-4 border-t border-gray-200 ${index === 2 ? '' : ''}`}>
               <a href="#" className="text-blue-600">Learn more</a>
             </div>
           ))}

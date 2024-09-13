@@ -1,4 +1,4 @@
-import { Footer } from "../sections/Footer";
+import Footer from "../sections/Footer";
 import { Header } from "../sections/Header";
 import { Membership } from "./MembershipPage";
 
@@ -7,7 +7,7 @@ export default function Register() {
   <>
     <Header/>
     <Membership/>
-    <Footer/>
+    <Footer />
   </>
   ) ;
 }

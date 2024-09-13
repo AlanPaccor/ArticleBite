@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, updateProfile, updateEmail, updatePassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { auth } from '../lib/firebase-config';
+import { auth } from '@/app/lib/firebase-config';
 
-export default function Account() {
+export default function Account({ isDarkMode }: { isDarkMode: boolean }) {
   const [user, setUser] = useState<firebase.User | null>(null);
   const [loading, setLoading] = useState(true);
   const [newDisplayName, setNewDisplayName] = useState(user?.displayName || '');
@@ -59,35 +59,24 @@ export default function Account() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
+    <div className={`max-w-4xl mx-auto p-6 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'} shadow-md rounded-lg`}>
       <h1 className="text-3xl font-semibold mb-6">Account</h1>
       
       {/* Navigation Tabs */}
-      <div className="flex mb-6 border-b border-gray-300">
-        <button
-          onClick={() => setActiveSection('dashboard')}
-          className={`flex-1 p-2 text-center ${activeSection === 'dashboard' ? 'border-b-2 border-blue-500 font-semibold' : 'text-gray-600'}`}
-        >
-          Dashboard
-        </button>
-        <button
-          onClick={() => setActiveSection('paymentHistory')}
-          className={`flex-1 p-2 text-center ${activeSection === 'paymentHistory' ? 'border-b-2 border-blue-500 font-semibold' : 'text-gray-600'}`}
-        >
-          Payment History
-        </button>
-        <button
-          onClick={() => setActiveSection('personalDetails')}
-          className={`flex-1 p-2 text-center ${activeSection === 'personalDetails' ? 'border-b-2 border-blue-500 font-semibold' : 'text-gray-600'}`}
-        >
-          Personal Details
-        </button>
-        <button
-          onClick={() => setActiveSection('logout')}
-          className={`flex-1 p-2 text-center ${activeSection === 'logout' ? 'border-b-2 border-blue-500 font-semibold' : 'text-gray-600'}`}
-        >
-          Logout
-        </button>
+      <div className={`flex mb-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+        {['dashboard', 'paymentHistory', 'personalDetails', 'logout'].map((section) => (
+          <button
+            key={section}
+            onClick={() => setActiveSection(section as any)}
+            className={`flex-1 p-2 text-center ${
+              activeSection === section 
+                ? `border-b-2 border-blue-500 font-semibold` 
+                : isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}
+          >
+            {section.charAt(0).toUpperCase() + section.slice(1)}
+          </button>
+        ))}
       </div>
 
       {/* Section Content */}
@@ -96,7 +85,6 @@ export default function Account() {
           <div>
             <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
             <p>Welcome to your dashboard! Here you can see a summary of your account activities.</p>
-            {/* Add more dashboard content here */}
           </div>
         )}
         
@@ -104,7 +92,6 @@ export default function Account() {
           <div>
             <h2 className="text-xl font-semibold mb-4">Payment History</h2>
             <p>Here you can view your payment history.</p>
-            {/* Add payment history content here */}
           </div>
         )}
         
@@ -119,21 +106,21 @@ export default function Account() {
                 placeholder="New display name"
                 value={newDisplayName}
                 onChange={(e) => setNewDisplayName(e.target.value)}
-                className="block w-full mb-2 p-2 border border-gray-300 rounded"
+                className={`block w-full mb-2 p-2 border ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} rounded`}
               />
               <input
                 type="email"
                 placeholder="New email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                className="block w-full mb-2 p-2 border border-gray-300 rounded"
+                className={`block w-full mb-2 p-2 border ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} rounded`}
               />
               <input
                 type="password"
                 placeholder="New password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="block w-full mb-4 p-2 border border-gray-300 rounded"
+                className={`block w-full mb-4 p-2 border ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} rounded`}
               />
               <button
                 onClick={handleProfileUpdate}

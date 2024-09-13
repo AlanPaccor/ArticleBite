@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'; 
 import { useState, useEffect } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase-config';
 import Link from 'next/link';
 
@@ -14,7 +14,17 @@ export default function Login() {
 
   useEffect(() => {
     localStorage.setItem('previousLocation', window.location.pathname);
-  }, []);
+
+    // Check if the user is already logged in and redirect them to the dashboard
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.push('/userdashboard');
+      }
+    });
+
+    // Cleanup the subscription when the component is unmounted
+    return () => unsubscribe();
+  }, [router]);
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -26,11 +36,11 @@ export default function Login() {
       await signInWithEmailAndPassword(auth, email, password);
       const previousLocation = localStorage.getItem('previousLocation');
       if (previousLocation === '/register' || previousLocation === '/login') {
-        router.push('/'); 
+        router.push('/userdashboard'); 
       } else if (previousLocation) {
         router.push(previousLocation); 
       } else {
-        router.push('/'); 
+        router.push('/userdashboard'); 
       }
     } catch (error: any) {
       console.error('Error logging in:', error.message);
