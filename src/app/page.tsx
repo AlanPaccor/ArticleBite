@@ -9,7 +9,6 @@ import { LogoTicker } from "./sections/LogoTicker";
 import { Pricing } from "./sections/Pricing";
 import { ProductShowcase } from "./sections/ProductShowcase";
 import { Testimonials } from "./sections/Testimonials";
-import { MantineProvider } from '@mantine/core';
 
 export default function Home() {
   return (
@@ -18,6 +17,7 @@ export default function Home() {
       <Hero />
       <LogoTicker />
       <ProductShowcase />
+      <FeaturesDisplay />
       <Pricing />
       <Testimonials />
       <CallToAction />

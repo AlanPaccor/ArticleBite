@@ -26,7 +26,7 @@ export const Header = () => {
               <a href='/memberships'>Memberships</a>
               <a href='#'>Reviews</a>
               <a href='/login'>Login</a>
-              <a href='/register' className='bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Register</a>
+              <a href='/register' className='bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Sign Up</a>
             </nav>
           </div>
         </div>
