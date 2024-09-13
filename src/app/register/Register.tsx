@@ -1,11 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { auth } from '../lib/firebase-config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { useRouter } from 'next/navigation';  // Changed from 'next/router'
-import Link from 'next/link';  // Added for client-side navigation
-import './Register.css';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+export const metadata = {
+  title: "Sign Up - Simple",
+  description: "Page description",
+};
 
 export default function RegisterPage() {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
@@ -22,75 +26,91 @@ export default function RegisterPage() {
     event.preventDefault();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      router.push('/');  // Always redirect to home after successful registration
+      router.push('/');  // Redirect to home after successful registration
     } catch (error: any) {
       console.error('Error registering user:', error.message);
     }
   };
 
-  // Rest of your component code...
-  
-
   return (
-    <div className='registerContainer'>
-      <div className='logoNloginContainer'>
-        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-        </svg>
-        <h1>Sign Up to ArticleBite</h1>
-        <h2>
-          Already Signed Up?
-          <Link href='/login'>Login</Link>
-        </h2>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="text-center mb-10">
+        <h1 className="text-4xl font-bold">Create your account</h1>
       </div>
-
-      <div className='signupInputFormContainer'>
-        <form onSubmit={handleRegister}>
-          <div className='inputField'>
-            <label htmlFor='fullName'>Full Name</label>
+      
+      <div className="w-full max-w-md">
+        <form onSubmit={handleRegister} className="space-y-4">
+          <div>
+            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
             <input
-              type='text'
-              id='fullName'
-              placeholder='Enter your full name'
+              type="text"
+              id="fullName"
+              placeholder="Corey Barker"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
+              className="form-input w-full py-2"
             />
           </div>
 
-          <div className='inputField'>
-            <label htmlFor='email'>E-Mail</label>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
-              type='email'
-              id='email'
-              placeholder='Enter your email'
+              type="email"
+              id="email"
+              placeholder="corybarker@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="form-input w-full py-2"
             />
           </div>
 
-          <div className='inputField'>
-            <label htmlFor='password'>Password</label>
-            <div className='passwordInput'>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="relative">
               <input
                 type={passwordVisible ? 'text' : 'password'}
-                id='password'
-                placeholder='Enter your password'
+                id="password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="form-input w-full py-2"
               />
-              <button type='button' className='togglePassword' onClick={togglePasswordVisibility}>
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500"
+              >
                 {passwordVisible ? 'Hide' : 'Show'}
               </button>
             </div>
           </div>
 
-          <div className='submitButton'>
-            <button type='submit'>Sign Up</button>
+          <div className="mt-6 space-y-3">
+            <button type="submit" className="btn w-full bg-gradient-to-t from-blue-600 to-blue-500 text-white shadow hover:bg-blue-600 py-2">
+              Register
+            </button>
+            <div className="text-center text-sm italic text-gray-400">Or</div>
+            <button type="button" className="btn w-full bg-gradient-to-t from-gray-900 to-gray-700 text-white shadow hover:bg-gray-800 py-2">
+              Continue with GitHub
+            </button>
           </div>
         </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-500">
+            By signing up, you agree to the{" "}
+            <a href="#0" className="whitespace-nowrap font-medium text-gray-700 underline hover:no-underline">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="#0" className="whitespace-nowrap font-medium text-gray-700 underline hover:no-underline">
+              Privacy Policy
+            </a>.
+          </p>
+        </div>
       </div>
     </div>
   );

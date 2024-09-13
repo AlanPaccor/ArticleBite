@@ -1,20 +1,18 @@
 "use client";
 
-// src/app/login/page.tsx (or another page file)
-import { useRouter } from 'next/navigation'; // For app directory usage
+import { useRouter } from 'next/navigation'; 
 import { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import './Login.css';
 import { auth } from '../lib/firebase-config';
+import Link from 'next/link';
 
 export default function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter(); // useRouter from next/navigation
+  const router = useRouter(); 
 
   useEffect(() => {
-    // Store current location before any navigation
     localStorage.setItem('previousLocation', window.location.pathname);
   }, []);
 
@@ -26,14 +24,13 @@ export default function Login() {
     event.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Check previous location and redirect
       const previousLocation = localStorage.getItem('previousLocation');
       if (previousLocation === '/register' || previousLocation === '/login') {
-        router.push('/'); // Redirect to homepage if coming from login or register
+        router.push('/'); 
       } else if (previousLocation) {
-        router.push(previousLocation); // Redirect to the last visited page
+        router.push(previousLocation); 
       } else {
-        router.push('/'); // Default redirect
+        router.push('/'); 
       }
     } catch (error: any) {
       console.error('Error logging in:', error.message);
@@ -41,54 +38,61 @@ export default function Login() {
   };
 
   return (
-    <div className='loginContainer'>
-      <div className='logoNloginContainer'>
-        {/* Change the div to an SVG element */}
-        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z" />
-        </svg>
-        <h1>Login to ArticleBite</h1>
-        <h2>
-          Not Signed Up?
-          <a href='/register'>Sign Up</a>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="text-center mb-10">
+        <h1 className="text-4xl font-bold">Login to ArticleBite</h1>
+        <h2 className="mt-4 text-sm text-gray-700">
+          Not Signed Up? <Link href="/register" className="text-blue-500 hover:underline">Sign Up</Link>
         </h2>
       </div>
-
-      <div className='loginInputFormContainer'>
-        <form onSubmit={handleLogin}>
-          <div className='inputField'>
-            <label htmlFor='email'>E-Mail</label>
+      
+      <div className="w-full max-w-md">
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">E-Mail</label>
             <input
-              type='email'
-              id='email'
-              placeholder='Enter your email'
+              type="email"
+              id="email"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="form-input w-full py-2"
             />
           </div>
 
-          <div className='inputField'>
-            <label htmlFor='password'>Password</label>
-            <div className='passwordInput'>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="relative">
               <input
                 type={passwordVisible ? 'text' : 'password'}
-                id='password'
-                placeholder='Enter your password'
+                id="password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="form-input w-full py-2"
               />
-              <button type='button' className='togglePassword' onClick={togglePasswordVisibility}>
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500"
+              >
                 {passwordVisible ? 'Hide' : 'Show'}
               </button>
             </div>
           </div>
 
-          <div className='submitButton'>
-            <button type='submit'>Login</button>
-          </div>
+          <button type="submit" className="btn w-full bg-gradient-to-t from-blue-600 to-blue-500 text-white shadow hover:bg-blue-600 py-2">
+            Login
+          </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <Link href="/reset-password" className="text-sm text-gray-700 underline hover:no-underline">
+            Forgot password
+          </Link>
+        </div>
       </div>
     </div>
   );
