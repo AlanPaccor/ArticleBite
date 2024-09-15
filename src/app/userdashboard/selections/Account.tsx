@@ -8,7 +8,7 @@ import { auth } from '@/app/lib/firebase-config';
 export default function Account({ isDarkMode }: { isDarkMode: boolean }) {
   const [user, setUser] = useState<firebase.User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [newDisplayName, setNewDisplayName] = useState(user?.displayName || '');
+  const [newUsername, setNewUsername] = useState(user?.displayName || ''); // Now referred to as username
   const [newEmail, setNewEmail] = useState(user?.email || '');
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +18,8 @@ export default function Account({ isDarkMode }: { isDarkMode: boolean }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
+      setNewUsername(user?.displayName || ''); // Populate username
+      setNewEmail(user?.email || '');
       setLoading(false);
     });
 
@@ -38,15 +40,21 @@ export default function Account({ isDarkMode }: { isDarkMode: boolean }) {
     if (!user) return;
 
     try {
-      if (newDisplayName) {
-        await updateProfile(user, { displayName: newDisplayName });
+      // Update username (displayName acts as username)
+      if (newUsername !== user.displayName) {
+        await updateProfile(user, { displayName: newUsername });
       }
+
+      // Update email if it is different
       if (newEmail !== user.email) {
         await updateEmail(user, newEmail);
       }
+
+      // Update password if it's provided
       if (newPassword) {
         await updatePassword(user, newPassword);
       }
+
       alert("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -100,12 +108,12 @@ export default function Account({ isDarkMode }: { isDarkMode: boolean }) {
             <h2 className="text-xl font-semibold mb-4">Personal Details</h2>
             <div>
               <p className="mb-2">Email: {user?.email}</p>
-              <p className="mb-4">Display Name: {user?.displayName || 'No display name set'}</p>
+              <p className="mb-4">Username: {user?.displayName || 'No username set'}</p> {/* Changed displayName to username */}
               <input
                 type="text"
-                placeholder="New display name"
-                value={newDisplayName}
-                onChange={(e) => setNewDisplayName(e.target.value)}
+                placeholder="New username"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
                 className={`block w-full mb-2 p-2 border ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} rounded`}
               />
               <input

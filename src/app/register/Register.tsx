@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { auth } from '../lib/firebase-config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { db } from '../lib/firebase-config';  // Import Firestore database
+import { doc, setDoc } from 'firebase/firestore'; // Firestore functions
 import Link from 'next/link';
 
 export const metadata = {
@@ -16,6 +18,7 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [username, setUsername] = useState<string>(''); // Add username state
   const router = useRouter();
 
   const togglePasswordVisibility = () => {
@@ -25,8 +28,18 @@ export default function RegisterPage() {
   const handleRegister = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.push('/userdashboard');  // Redirect to home after successful registration
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Store user details in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        fullName,
+        email,
+        username, // Save username
+        createdAt: new Date(),
+      });
+
+      router.push('/userdashboard');  // Redirect to dashboard after successful registration
     } catch (error: any) {
       console.error('Error registering user:', error.message);
     }
@@ -41,13 +54,13 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <form onSubmit={handleRegister} className="space-y-4">
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">Username</label>
             <input
               type="text"
-              id="fullName"
-              placeholder="Corey Barker"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              id="username"
+              placeholder="Enter a username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               className="form-input w-full py-2"
             />

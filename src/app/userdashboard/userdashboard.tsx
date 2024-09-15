@@ -71,7 +71,9 @@ export default function UserDashboard() {
               <UserIcon className={`w-8 h-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
             </div>
           )}
+          {/* Display the user's username or 'Guest' */}
           <h2 className="text-lg font-semibold">{user?.displayName || 'Guest'}</h2>
+          {/* Edit button for updating profile */}
           <button className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Edit</button>
         </div>
         
