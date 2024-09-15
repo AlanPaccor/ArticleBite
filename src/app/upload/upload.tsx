@@ -4,8 +4,9 @@ import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import './UploadPage.css';
-import { User, signOut } from 'firebase/auth';
-import { auth } from '../lib/firebase-config';
+import { User } from 'firebase/auth';
+import { auth, signOut, db } from '../lib/firebase-config';
+import { collection, addDoc } from 'firebase/firestore';
 
 interface Notecard {
   objective: string;
@@ -36,6 +37,7 @@ export default function UploadPage() {
   };
 
   const parseNotecards = (text: string): Notecard[] => {
+    console.log('Parsing notecards from text:', text);
     const cards: Notecard[] = [];
     const objectiveRegex = /objective(\d+)={([^}]+)}/g;
     const answerRegex = /answer(\d+)={([^}]+)}/g;
@@ -62,13 +64,36 @@ export default function UploadPage() {
       }
     });
 
+    console.log('Parsed notecards:', cards);
     return cards;
+  };
+
+  const saveNotecardsToFirestore = async (notecards: Notecard[], userEmail: string) => {
+    try {
+      const notesHistoryCollection = collection(db, 'notesHistory');
+      const docData = {
+        userEmail: userEmail,
+        notecards: notecards,
+        createdAt: new Date(),
+        sourceLink: link
+      };
+      await addDoc(notesHistoryCollection, docData);
+      console.log('Notecards saved to Firestore');
+    } catch (error) {
+      console.error('Error saving notecards to Firestore:', error);
+      throw error;
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!user) {
+    if (!user || !user.email) {
+      console.log('No user or user email, redirecting to /login');
       router.push('/login');
+      return;
+    }
+    if (!link) {
+      setError('Please enter a URL to scrape.');
       return;
     }
     setIsLoading(true);
@@ -76,13 +101,19 @@ export default function UploadPage() {
     setNotecards([]);
 
     try {
-      const response = await axios.post<{ summarizedText: string }>('http://localhost:3001/scrape', { url: link });
+      console.log('Sending request to server with URL:', link, 'and email:', user.email);
+      const response = await axios.post<{ summarizedText: string }>('http://localhost:3001/scrape', { 
+        url: link,
+        email: user.email
+      });
+      console.log('Received response:', response.data);
       const summarizedText = response.data.summarizedText;
       
       if (summarizedText) {
         const cards = parseNotecards(summarizedText);
         if (cards.length > 0) {
           setNotecards(cards);
+          await saveNotecardsToFirestore(cards, user.email);
         } else {
           setError('No valid notecards found in the response.');
         }
@@ -90,16 +121,18 @@ export default function UploadPage() {
         setError('No summarized text received from the server.');
       }
     } catch (error: any) {
-      console.error('Error fetching notes:', error);
-      setError('Failed to fetch notes. Please try again.');
+      console.error('Error fetching or saving notes:', error);
+      setError(`Failed to fetch or save notes: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSignOut = async () => {
+    console.log('Attempting to sign out');
     try {
       await signOut(auth);
+      console.log('Sign out successful, redirecting to /login');
       router.push('/login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -108,7 +141,7 @@ export default function UploadPage() {
   };
 
   if (!user) {
-    return null; // Or you could return a loading indicator here
+    return <div>Loading...</div>; // Or a more sophisticated loading indicator
   }
 
   return (
@@ -117,7 +150,7 @@ export default function UploadPage() {
         <h1>Upload A Link To Get Your Generated Notes!</h1>
       </div>
       <div>
-        <p>Welcome, {user.displayName}!</p>
+        <p>Welcome, {user.displayName || user.email}!</p>
         <button onClick={handleSignOut}>Sign Out</button>
         <form onSubmit={handleSubmit}>
           <input 

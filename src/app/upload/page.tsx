@@ -1,8 +1,9 @@
 // pages/upload.tsx
 
 import UploadPage from "./upload";
-import { Footer } from "../sections/Footer";
 import { Header } from "../sections/Header";
+import Footer from "../sections/Footer";
+
 
 
 export default function Upload() {
@@ -10,7 +11,7 @@ export default function Upload() {
     <>
       <Header/>
       <UploadPage/>
-      <Footer/>
+      <Footer />
     </>
   
 )

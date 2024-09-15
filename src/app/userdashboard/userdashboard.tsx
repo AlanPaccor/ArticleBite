@@ -7,6 +7,7 @@ import logo from '../assets/logosaas.png';
 import { auth } from '../lib/firebase-config';
 import { User } from 'firebase/auth';
 import Account from './selections/Account';
+import History from './selections/History';
 
 export default function UserDashboard() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -36,7 +37,7 @@ export default function UserDashboard() {
   const renderContent = () => {
     switch (activeSection) {
       case 'History':
-        return <div>History of Past Notes</div>;
+        return <History />;
       case 'Schedule':
         return <div>Schedule Content</div>;
       case 'Settings':

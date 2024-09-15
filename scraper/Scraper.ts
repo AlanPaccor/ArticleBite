@@ -47,13 +47,13 @@ async function summarizeText(text: string): Promise<string> {
   }
 }
 
-// Scraping route
+// Add email to the request body
 app.post('/scrape', async (req: Request, res: Response) => {
-  const { url } = req.body;
+  const { url, email } = req.body;
 
-  if (!url) {
-    console.log('URL is missing from the request.');
-    return res.status(400).json({ error: 'URL is required' });
+  if (!url || !email) {
+    console.log('URL or email is missing from the request.');
+    return res.status(400).json({ error: 'URL and email are required' });
   }
 
   try {
@@ -82,6 +82,7 @@ app.post('/scrape', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to scrape and summarize data' });
   }
 });
+
 
 // Start the server
 const PORT = process.env.PORT || 3001;

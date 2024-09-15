@@ -1,13 +1,31 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
 import ArrowRight from '../assets/arrow-right.svg';
 import Logo from '../assets/logosaas.png';
 import Image from "next/image";
 import MenuIcon from '../assets/menu.svg';
+import { auth } from "../lib/firebase-config";
 
 export const Header = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check if the user is logged in (only on the client)
+  useEffect(() => {
+    if (auth) {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        setIsLoggedIn(!!user); // Set true if user is logged in, false otherwise
+      });
+
+      return () => unsubscribe();
+    }
+  }, []);
+
   return (
     <header className='sticky top-0 backdrop-blur-sm z-20'>
       <div className="flex justify-center items-center py-3 bg-black text-white text-sm gap-3">
-        <p className='text-white/60 hidden md:block'>Generate More Than Website Links, Start on PDF's, Videos and More</p>
+        <p className='text-white/60 hidden md:block'>Generate More Than Website Links, Start on PDFs, Videos, and More</p>
         <a href="/memberships" className='inline-flex gap-1 items-center'>
           <p>Get a Membership Now!</p>
           <ArrowRight className="h-4 w-4 inline-flex justify-center items-center" />
@@ -25,8 +43,19 @@ export const Header = () => {
               <a href='#'>Features</a>
               <a href='/memberships'>Memberships</a>
               <a href='#'>Reviews</a>
-              <a href='/login'>Login</a>
-              <a href='/register' className='bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Sign Up</a>
+
+              {/* Show "Login" and "Sign Up" if the user is NOT logged in */}
+              {!isLoggedIn && (
+                <>
+                  <a href='/login'>Login</a>
+                  <a href='/register' className='bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Sign Up</a>
+                </>
+              )}
+              
+              {/* Show "Dashboard" button if the user IS logged in */}
+              {isLoggedIn && (
+                <a href='/userdashboard' className='dashBoardbtn bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Dashboard</a>
+              )}
             </nav>
           </div>
         </div>

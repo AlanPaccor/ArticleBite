@@ -1,6 +1,8 @@
 import { getApps, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
+// Firebase configuration object
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -11,11 +13,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase only if it hasn't been initialized yet
-let app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-let auth;
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-if (typeof window !== 'undefined') {
-  auth = getAuth(app);
-}
+// Initialize Firebase Authentication and get a reference to the service
+const auth = getAuth(app);
 
-export { app, auth };
+// Initialize Cloud Firestore and get a reference to the service
+const db = getFirestore(app);
+
+export { app, auth, db };
