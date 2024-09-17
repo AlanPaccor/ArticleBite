@@ -8,23 +8,25 @@ import { auth } from '../lib/firebase-config';
 import { User } from 'firebase/auth';
 import Account from './selections/Account';
 import History from './selections/History';
+import { useDisclosure } from '@mantine/hooks';
+import { Modal, Button } from '@mantine/core';
 
-export default function UserDashboard() {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
+const UserDashboard: React.FC = () => {
+  const [opened, { open, close }] = useDisclosure(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme');
       return savedTheme ? savedTheme === 'dark' : true;
     }
     return true;
   });
-  const [activeSection, setActiveSection] = useState('Dashboard');
+  const [activeSection, setActiveSection] = useState<string>('Dashboard');
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -38,8 +40,8 @@ export default function UserDashboard() {
     switch (activeSection) {
       case 'History':
         return <History />;
-      case 'Schedule':
-        return <div>Schedule Content</div>;
+      case 'Favorites':
+        return <div>Favorites Content</div>;
       case 'Settings':
         return <Account isDarkMode={isDarkMode} />;
       default:
@@ -52,6 +54,13 @@ export default function UserDashboard() {
         );
     }
   };
+  useEffect(() => {
+    if (opened) {
+      console.log('Modal is opened');
+    } else {
+      console.log('Modal is closed');
+    }
+  }, [opened]);
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
@@ -71,14 +80,54 @@ export default function UserDashboard() {
               <UserIcon className={`w-8 h-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
             </div>
           )}
-          {/* Display the user's username or 'Guest' */}
           <h2 className="text-lg font-semibold">{user?.displayName || 'Guest'}</h2>
-          {/* Edit button for updating profile */}
-          <button className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Edit</button>
+          
+          {/* Edit button with modal trigger */}
+          <Button 
+        onClick={() => {
+          console.log('Open button clicked');
+          open();
+        }}
+      >
+        Open Modal
+      </Button>
+      <Modal
+        opened={opened}
+        onClose={() => {
+          console.log('Modal close button clicked');
+          close();
+        }}
+        title="Test Modal"
+        styles={(theme) => ({
+          modal: {
+            maxWidth: '600px', // Adjust based on your preference
+            maxHeight: '80vh', // Adjust based on your preference
+            margin: 'auto',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+          overlay: {
+            backdropFilter: 'blur(5px)', // Optional: add a blur effect to the backdrop
+            position: 'fixed', // Ensure the overlay is positioned fixed
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          },
+        })}
+      >
+        <p>Modal content goes here.</p>
+      </Modal>
+
+
+
         </div>
-        
+
         <nav className="flex-grow">
-          {['Dashboard', 'History', 'Schedule', 'Settings'].map((section) => (
+          {['Dashboard', 'History', 'Favorites', 'Settings'].map((section) => (
             <button
               key={section}
               className={`w-full text-left py-2 px-4 rounded mb-2 ${
@@ -129,3 +178,5 @@ export default function UserDashboard() {
     </div>
   );
 }
+
+export default UserDashboard;
