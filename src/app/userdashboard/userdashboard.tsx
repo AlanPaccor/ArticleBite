@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from 'react';
 import { Moon, SearchIcon, Sun, UserIcon } from 'lucide-react';
 import Image from 'next/image';
@@ -8,11 +6,9 @@ import { auth } from '../lib/firebase-config';
 import { User } from 'firebase/auth';
 import Account from './selections/Account';
 import History from './selections/History';
-import { useDisclosure } from '@mantine/hooks';
-import { Modal, Button } from '@mantine/core';
+import Modal from '../components/Modal';
 
 const UserDashboard: React.FC = () => {
-  const [opened, { open, close }] = useDisclosure(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme');
@@ -22,10 +18,15 @@ const UserDashboard: React.FC = () => {
   });
   const [activeSection, setActiveSection] = useState<string>('Dashboard');
   const [user, setUser] = useState<User | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
+      if (currentUser?.photoURL) {
+        setProfilePicture(currentUser.photoURL);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -35,6 +36,10 @@ const UserDashboard: React.FC = () => {
       localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     }
   }, [isDarkMode]);
+
+  const handleProfileUpdate = (newPhotoURL: string) => {
+    setProfilePicture(newPhotoURL);
+  };
 
   const renderContent = () => {
     switch (activeSection) {
@@ -54,13 +59,6 @@ const UserDashboard: React.FC = () => {
         );
     }
   };
-  useEffect(() => {
-    if (opened) {
-      console.log('Modal is opened');
-    } else {
-      console.log('Modal is closed');
-    }
-  }, [opened]);
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
@@ -71,59 +69,23 @@ const UserDashboard: React.FC = () => {
             <Image src={logo} alt='SaaS Logo' height={40} width={40} />
           </a>
         </div>
-        
+
         <div className="flex flex-col items-center mb-8">
-          {user?.photoURL ? (
-            <img src={user.photoURL} alt="User" className="w-16 h-16 rounded-full mb-2" />
+          {profilePicture ? (
+            <img src={profilePicture} alt="User" className="w-20 h-20 rounded-full mb-2 object-cover" />
           ) : (
             <div className={`w-16 h-16 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'} flex items-center justify-center mb-2`}>
               <UserIcon className={`w-8 h-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
             </div>
           )}
           <h2 className="text-lg font-semibold">{user?.displayName || 'Guest'}</h2>
-          
-          {/* Edit button with modal trigger */}
-          <Button 
-        onClick={() => {
-          console.log('Open button clicked');
-          open();
-        }}
-      >
-        Open Modal
-      </Button>
-      <Modal
-        opened={opened}
-        onClose={() => {
-          console.log('Modal close button clicked');
-          close();
-        }}
-        title="Test Modal"
-        styles={(theme) => ({
-          modal: {
-            maxWidth: '600px', // Adjust based on your preference
-            maxHeight: '80vh', // Adjust based on your preference
-            margin: 'auto',
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          },
-          overlay: {
-            backdropFilter: 'blur(5px)', // Optional: add a blur effect to the backdrop
-            position: 'fixed', // Ensure the overlay is positioned fixed
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          },
-        })}
-      >
-        <p>Modal content goes here.</p>
-      </Modal>
 
-
-
+          <button 
+            className={`${isDarkMode ? 'text-white' : 'text-gray-900'} mx-4 rounded text-sm`}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Edit
+          </button>
         </div>
 
         <nav className="flex-grow">
@@ -141,7 +103,7 @@ const UserDashboard: React.FC = () => {
             </button>
           ))}
         </nav>
-        
+
         <div className="mt-auto flex items-center justify-between">
           <span className="text-sm"><Sun/></span>
           <button 
@@ -175,6 +137,9 @@ const UserDashboard: React.FC = () => {
 
         {renderContent()}
       </div>
+
+      {/* Modal */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onProfileUpdate={handleProfileUpdate} />
     </div>
   );
 }
