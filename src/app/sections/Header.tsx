@@ -47,8 +47,8 @@ export const Header = () => {
               {/* Show "Login" and "Sign Up" if the user is NOT logged in */}
               {!isLoggedIn && (
                 <>
-                  <a href='/login'>Login</a>
-                  <a href='/register' className='bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Sign Up</a>
+                  <a href='/registration/login'>Login</a>
+                  <a href='/registration/signup' className='bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Sign Up</a>
                 </>
               )}
               

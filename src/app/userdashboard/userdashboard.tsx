@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { Moon, SearchIcon, Sun, UserIcon } from 'lucide-react';
 import Image from 'next/image';
@@ -104,15 +105,23 @@ const UserDashboard: React.FC = () => {
           ))}
         </nav>
 
-        <div className="mt-auto flex items-center justify-between">
-          <span className="text-sm"><Sun/></span>
-          <button 
-            className={`w-12 h-6 rounded-full p-1 ${isDarkMode ? 'bg-yellow-400' : 'bg-gray-400'}`}
-            onClick={() => setIsDarkMode(!isDarkMode)}
-          >
-            <div className={`w-4 h-4 rounded-full bg-white transform duration-300 ease-in-out ${isDarkMode ? 'translate-x-6' : ''}`} />
-          </button>
-          <span className="text-sm"><Moon /></span>
+        <div className="mt-auto flex flex-col items-center">
+          <div className="flex items-center mb-4">
+            <span className="text-sm"><Sun/></span>
+            <button 
+              className={`w-12 h-6 rounded-full p-1 mx-4 ${isDarkMode ? 'bg-yellow-400' : 'bg-gray-400'}`}
+              onClick={() => setIsDarkMode(!isDarkMode)}
+            >
+              <div className={`w-4 h-4 rounded-full bg-white transform duration-300 ease-in-out ${isDarkMode ? 'translate-x-6' : ''}`} />
+            </button>
+            <span className="text-sm"><Moon /></span>
+          </div>
+
+          <div className="flex space-x-4 mb-4">
+            <a href="/legal/helpcenter" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Help</a>
+            <a href="/legal/tos" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>TOS</a>
+            <a href="/legal/privacy" className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Privacy</a>
+          </div>
         </div>
       </div>
 

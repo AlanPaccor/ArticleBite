@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState } from 'react';
-import { auth } from '../lib/firebase-config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { db } from '../lib/firebase-config';  // Import Firestore database
 import { doc, setDoc } from 'firebase/firestore'; // Firestore functions
 import Link from 'next/link';
+import { auth, db } from '@/app/lib/firebase-config';
 
 export const metadata = {
   title: "Sign Up - Simple",

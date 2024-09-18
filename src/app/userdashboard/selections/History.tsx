@@ -32,7 +32,7 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
       if (user) {
         fetchNotecards(user.email);
       } else {
-        router.push('/login');
+        router.push('/registration/login');
       }
     });
 

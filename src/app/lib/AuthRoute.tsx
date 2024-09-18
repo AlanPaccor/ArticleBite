@@ -31,7 +31,7 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ element: Element }) => {
   return isAuthenticated ? (
     <Element />
   ) : (
-    <Navigate to="/login" state={{ from: location }} />
+    <Navigate to="/registration/login" state={{ from: location }} />
   );
 };
 

@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation'; 
 import { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../lib/firebase-config';
 import Link from 'next/link';
+import { auth } from '@/app/lib/firebase-config';
 
 export default function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -35,7 +35,7 @@ export default function Login() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       const previousLocation = localStorage.getItem('previousLocation');
-      if (previousLocation === '/register' || previousLocation === '/login') {
+      if (previousLocation === '/registration/signup' || previousLocation === '/registration/login') {
         router.push('/userdashboard'); 
       } else if (previousLocation) {
         router.push(previousLocation); 
@@ -52,7 +52,7 @@ export default function Login() {
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold">Login to ArticleBite</h1>
         <h2 className="mt-4 text-sm text-gray-700">
-          Not Signed Up? <Link href="/register" className="text-blue-500 hover:underline">Sign Up</Link>
+          Not Signed Up? <Link href="/registration/signup" className="text-blue-500 hover:underline">Sign Up</Link>
         </h2>
       </div>
       

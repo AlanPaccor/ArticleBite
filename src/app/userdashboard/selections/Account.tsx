@@ -29,7 +29,7 @@ export default function Account({ isDarkMode }: { isDarkMode: boolean }) {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push('/login');
+      router.push('/registration/login');
     } catch (error) {
       console.error("Error signing out:", error);
       setError("Failed to sign out. Please try again.");

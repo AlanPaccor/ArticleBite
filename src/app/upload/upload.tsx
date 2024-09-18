@@ -25,7 +25,7 @@ export default function UploadPage() {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       if (!currentUser) {
-        router.push('/login');
+        router.push('/registration/login');
       }
     });
 
@@ -88,8 +88,8 @@ export default function UploadPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!user || !user.email) {
-      console.log('No user or user email, redirecting to /login');
-      router.push('/login');
+      console.log('No user or user email, redirecting to /registration/login');
+      router.push('/registration/login');
       return;
     }
     if (!link) {
@@ -132,8 +132,8 @@ export default function UploadPage() {
     console.log('Attempting to sign out');
     try {
       await signOut(auth);
-      console.log('Sign out successful, redirecting to /login');
-      router.push('/login');
+      console.log('Sign out successful, redirecting to /registration/login');
+      router.push('/registration/login');
     } catch (error) {
       console.error('Error signing out:', error);
       setError('Failed to sign out. Please try again.');
