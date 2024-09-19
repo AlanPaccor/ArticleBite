@@ -23,7 +23,7 @@ const Favorites: React.FC<FavoritesProps> = ({ isDarkMode, favorites }) => {
     <div className="grid grid-cols-3 gap-4">
       {favorites.includes('article') && (
         <a
-          href="/upload"
+          href="/generators/ArticleGen" // Updated href
           className={`${
             isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
           } rounded-lg p-4 h-80 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group`}
@@ -54,6 +54,7 @@ const Favorites: React.FC<FavoritesProps> = ({ isDarkMode, favorites }) => {
           <Star className="absolute bottom-2 right-2 w-6 h-6 text-yellow-400 fill-current" />
         </a>
       )}
+      {/* Removed the map function and share button */}
     </div>
   );
 };

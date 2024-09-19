@@ -1,15 +1,15 @@
 // pages/upload.tsx
 
 import UploadPage from "./upload";
-import { Header } from "../../sections/Header";
 import Footer from "../../sections/Footer";
+import { Header } from "@/app/sections/Header";
 
 
 
 export default function Upload() {
   return (
     <>
-      <Header/>
+      <Header />
       <UploadPage/>
       <Footer />
     </>

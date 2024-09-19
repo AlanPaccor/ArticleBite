@@ -7,6 +7,8 @@ import { User } from 'firebase/auth';
 import { auth, db } from '../../lib/firebase-config';
 import { collection, addDoc } from 'firebase/firestore';
 import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
+import { v4 as uuidv4 } from 'uuid';
+import { Share2, X, Loader } from 'lucide-react';
 
 interface Notecard {
   objective: string;
@@ -97,6 +99,11 @@ export default function UploadPage() {
   const [questionCount, setQuestionCount] = useState<number>(5);
   const [difficulty, setDifficulty] = useState<string>('Easy');
   const [questionType, setQuestionType] = useState<string>('Multiple Choice');
+  const [progress, setProgress] = useState<number>(0);
+  const [progressStep, setProgressStep] = useState<string>('');
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
+  const [shareUrl, setShareUrl] = useState<string>('');
+  const [logs, setLogs] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -165,7 +172,8 @@ export default function UploadPage() {
         createdAt: new Date(),
         sourceLink: link
       };
-      await addDoc(notesHistoryCollection, docData);
+      const docRef = await addDoc(notesHistoryCollection, docData);
+      return docRef;
     } catch (error) {
       throw error;
     }
@@ -184,22 +192,28 @@ export default function UploadPage() {
     setIsLoading(true);
     setError('');
     setNotecards([]);
+    setLogs([]);
   
     try {
-      const response = await axios.post<{ summarizedText: string }>('http://localhost:3001/scrape', { 
-        url: link,
-        email: user.email,
-        questionCount,
-        difficulty,
-        questionType
-      });
-      const summarizedText = response.data.summarizedText;
+      const response = await axios.post<{ summarizedText: string }>(
+        'http://localhost:3001/scrape', 
+        { 
+          url: link,
+          email: user.email,
+          questionCount,
+          difficulty,
+          questionType
+        }
+      );
+
+      const { summarizedText } = response.data;
       
       if (summarizedText) {
         const cards = parseNotecards(summarizedText);
         if (cards.length > 0) {
           setNotecards(cards);
-          await saveNotecardsToFirestore(cards, user.email);
+          const docRef = await saveNotecardsToFirestore(cards, user.email);
+          setShareUrl(`${window.location.origin}/shared/${docRef.id}`);
         } else {
           setError('No valid notecards found in the response.');
         }
@@ -218,6 +232,43 @@ export default function UploadPage() {
       prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
     );
   };
+
+  const handleShare = () => {
+    setIsShareModalOpen(true);
+  };
+
+  const handleCloseShareModal = () => {
+    setIsShareModalOpen(false);
+  };
+
+  const handleCopyShareLink = () => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('Share link copied to clipboard!');
+    });
+  };
+
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+
+    if (isLoading) {
+      eventSource = new EventSource('http://localhost:3001/progress');
+      
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setLogs(prevLogs => [...prevLogs, data.step]);
+      };
+
+      eventSource.onerror = () => {
+        eventSource?.close();
+      };
+    }
+
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, [isLoading]);
 
   if (!user) {
     return <div>Loading...</div>;
@@ -272,13 +323,32 @@ export default function UploadPage() {
                 className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
                 disabled={isLoading}
               >
-                {isLoading ? 'Scraping...' : 'Scrape and Generate Notes'}
+                {isLoading ? 'Processing...' : 'Scrape and Generate Notes'}
               </button>
+              {isLoading && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-center mb-2">
+                    <Loader className="animate-spin mr-2" />
+                    <span>Processing...</span>
+                  </div>
+                  <div className="mt-4 max-h-40 overflow-y-auto">
+                    {logs.map((log, index) => (
+                      <p key={index} className="text-sm text-gray-600">{log}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
             </form>
           </>
         ) : (
           <>
             <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Generated Notes</h1>
+            <button
+              onClick={handleShare}
+              className="mb-4 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition flex items-center"
+            >
+              <Share2 className="mr-2" /> Share These Notes
+            </button>
             <Carousel>
               {notecards.map((notecard, index) => (
                 <Card
@@ -293,6 +363,33 @@ export default function UploadPage() {
           </>
         )}
       </div>
+      {isShareModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Share These Notes</h2>
+              <button onClick={handleCloseShareModal} className="text-gray-500 hover:text-gray-700">
+                <X />
+              </button>
+            </div>
+            <p className="mb-4">Copy this link to share your notes:</p>
+            <div className="flex">
+              <input
+                type="text"
+                value={shareUrl}
+                readOnly
+                className="flex-grow border rounded-l px-2 py-1"
+              />
+              <button
+                onClick={handleCopyShareLink}
+                className="bg-blue-500 text-white px-4 py-1 rounded-r hover:bg-blue-600 transition"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
