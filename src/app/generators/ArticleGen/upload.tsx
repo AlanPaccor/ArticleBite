@@ -4,7 +4,7 @@ import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { User } from 'firebase/auth';
-import { auth, db } from '../lib/firebase-config';
+import { auth, db } from '../../lib/firebase-config';
 import { collection, addDoc } from 'firebase/firestore';
 import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
 

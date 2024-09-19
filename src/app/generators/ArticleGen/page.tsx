@@ -1,8 +1,8 @@
 // pages/upload.tsx
 
 import UploadPage from "./upload";
-import { Header } from "../sections/Header";
-import Footer from "../sections/Footer";
+import { Header } from "../../sections/Header";
+import Footer from "../../sections/Footer";
 
 
 

@@ -73,7 +73,7 @@ const UserDashboard: React.FC = () => {
         return (
           <div className="grid grid-cols-3 gap-4">
             <a
-              href="/upload"
+              href="/generators/ArticleGen"
               className={`${
                 isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
               } rounded-lg p-4 h-80 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group`}
