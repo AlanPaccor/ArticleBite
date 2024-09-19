@@ -4,13 +4,88 @@ import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { User } from 'firebase/auth';
-import { auth, signOut, db } from '../lib/firebase-config';
+import { auth, db } from '../lib/firebase-config';
 import { collection, addDoc } from 'firebase/firestore';
+import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
 
 interface Notecard {
   objective: string;
   explanation: string;
 }
+
+const Card = ({ objective, explanation, isFlipped, onClick }: { objective: string; explanation: string; isFlipped: boolean; onClick: () => void }) => (
+  <div
+    className={`card w-80 h-96 bg-blue-200 rounded-lg shadow-lg text-gray-800 cursor-pointer transition-transform duration-500 transform ${isFlipped ? 'rotate-y-180' : ''}`}
+    onClick={onClick}
+    style={{
+      perspective: '1000px',
+      transformStyle: 'preserve-3d',
+    }}
+  >
+    {/* Front Side (Question) */}
+    <div className={` backface-hidden transition-opacity duration-500 ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
+      <div className="text-center px-4">
+        <h2 className="text-xl font-bold mb-4">Question</h2>
+        <p className="text-lg">{objective}</p>
+      </div>
+    </div>
+    
+    {/* Back Side (Answer) */}
+    <div className={` backface-hidden rotate-y-180 transition-opacity duration-500 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}>
+      <div className="text-center px-4">
+        <h2 className="text-xl font-bold mb-4">Answer</h2>
+        <p className="text-lg">{explanation}</p>
+      </div>
+    </div>
+  </div>
+);
+
+
+
+const Carousel = ({ children }: { children: React.ReactNode }) => {
+  const [active, setActive] = useState(0); // Set the starting card to the first one
+  const count = React.Children.count(children);
+  const MAX_VISIBILITY = 3;
+
+  return (
+    <div className="carousel relative w-full h-96 perspective-500 transform-style-preserve-3d flex justify-center items-center">
+      {active > 0 && (
+        <button className="nav left absolute top-1/2 left-0 transform -translate-y-1/2 text-5xl text-blue-500 z-10 cursor-pointer" onClick={() => setActive(i => i - 1)}>
+          <TiChevronLeftOutline />
+        </button>
+      )}
+      {React.Children.map(children, (child, i) => (
+        <div
+          className="card-container absolute w-80 h-96 transition-all duration-300 ease-out"
+          style={{
+            '--active': i === active ? 1 : 0,
+            '--offset': (active - i) / 3,
+            '--direction': Math.sign(active - i),
+            '--abs-offset': Math.abs(active - i) / 3,
+            pointerEvents: active === i ? 'auto' : 'none',
+            opacity: Math.abs(active - i) >= MAX_VISIBILITY ? 0 : 1,
+            display: Math.abs(active - i) > MAX_VISIBILITY ? 'none' : 'block',
+            transform: `
+              rotateY(calc(var(--offset) * 50deg)) 
+              scaleY(calc(1 + var(--abs-offset) * -0.4))
+              translateZ(calc(var(--abs-offset) * -30rem))
+              translateX(calc(var(--direction) * -5rem))
+            `,
+            filter: `blur(calc(var(--abs-offset) * 1rem))`,
+          } as React.CSSProperties}
+        >
+          {child}
+        </div>
+      ))}
+      {active < count - 1 && (
+        <button className="nav right absolute top-1/2 right-0 transform -translate-y-1/2 text-5xl text-blue-500 z-10 cursor-pointer" onClick={() => setActive(i => i + 1)}>
+          <TiChevronRightOutline />
+        </button>
+      )}
+    </div>
+  );
+};
+
 
 export default function UploadPage() {
   const [link, setLink] = useState<string>('');
@@ -53,8 +128,8 @@ export default function UploadPage() {
 
   const parseNotecards = (text: string): Notecard[] => {
     const cards: Notecard[] = [];
-    const objectiveRegex = /objective(\d+)={([^}]+)}/g;
-    const answerRegex = /answer(\d+)={([^}]+)}/g;
+    const objectiveRegex = /objective(\d+)=\{([^}]+)\}/g;
+    const answerRegex = /answer(\d+)=\{([^}]+)\}/g;
 
     const objectives: { [key: string]: string } = {};
     const answers: { [key: string]: string } = {};
@@ -149,111 +224,74 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <div className="w-full max-w-2xl bg-white p-8 rounded shadow-md">
-        {notecards.length === 0 && (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-4xl p-8 rounded-lg shadow-xl">
+        {notecards.length === 0 ? (
           <>
             <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Upload A Link To Generate Notes!</h1>
-            <p className="text-center text-gray-600 mb-6">Welcome, {user.displayName || user.email}!</p>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex flex-col">
-                <input
-                  type="text"
-                  value={link}
-                  onChange={handleInputChange}
-                  placeholder="Enter the URL to scrape"
-                  className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 outline-none"
-                />
+            <p className="text-center text-gray-600 mb-6">Provide a URL and we'll scrape the content to generate flashcards for you.</p>
+            <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+              <input
+                type="text"
+                value={link}
+                onChange={handleInputChange}
+                placeholder="Enter a URL"
+                className="w-full border border-gray-300 p-2 rounded"
+              />
+              <div className="flex justify-between">
+                <label className="w-1/3">
+                  Question Count:
+                  <select value={questionCount} onChange={handleQuestionCountChange} className="ml-2">
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={15}>15</option>
+                    <option value={20}>20</option>
+                  </select>
+                </label>
+                <label className="w-1/3">
+                  Difficulty:
+                  <select value={difficulty} onChange={handleDifficultyChange} className="ml-2">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </label>
+                <label className="w-1/3">
+                  Question Type:
+                  <select value={questionType} onChange={handleQuestionTypeChange} className="ml-2">
+                    <option value="Multiple Choice">Multiple Choice</option>
+                    <option value="True/False">True/False</option>
+                    <option value="Short Answer">Short Answer</option>
+                    <option value="Essay">Essay</option>
+                  </select>
+                </label>
               </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="questionCount">Number of Questions</label>
-                <select
-                  id="questionCount"
-                  value={questionCount}
-                  onChange={(e) => setQuestionCount(Number(e.target.value))}
-                  className="px-4 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={15}>15</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="difficulty">Difficulty Level</label>
-                <select
-                  id="difficulty"
-                  value={difficulty}
-                  onChange={(e) => setDifficulty(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col">
-                <label htmlFor="questionType">Question Type</label>
-                <select
-                  id="questionType"
-                  value={questionType}
-                  onChange={(e) => setQuestionType(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="multiple choice">Multiple Choice</option>
-                  <option value="true/false">True/False</option>
-                  <option value="short answer">Short Answer</option>
-                  <option value="essay">Essay</option>
-                </select>
-              </div>
-
-              {error && (
-                <p className="text-red-500 text-sm">{error}</p>
-              )}
-
+              {error && <p className="text-red-500">{error}</p>}
               <button
                 type="submit"
+                className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
                 disabled={isLoading}
-                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
               >
-                {isLoading ? 'Loading...' : 'Scrape and Generate Notes'}
+                {isLoading ? 'Scraping...' : 'Scrape and Generate Notes'}
               </button>
             </form>
           </>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Generated Notes</h1>
+            <Carousel>
+              {notecards.map((notecard, index) => (
+                <Card
+                  key={index}
+                  objective={notecard.objective}
+                  explanation={notecard.explanation}
+                  isFlipped={flippedCards.includes(index)}
+                  onClick={() => handleCardFlip(index)}
+                />
+              ))}
+            </Carousel>
+          </>
         )}
-
-        {notecards.length > 0 && (
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 perspective">
-            {notecards.map((card, index) => (
-              <div
-                key={index}
-                className={`relative w-full h-48 transform-style-preserve-3d overflow-hidden bg-blue-200 p-4 rounded-lg shadow-lg text-white cursor-pointer ${flippedCards.includes(index) ? 'flipped' : ''}`}
-                onClick={() => handleCardFlip(index)}
-              >
-                <div className="card-inner transform-style-preserve-3d">
-                  <div className="card-front">
-                    <h3 className="font-bold text-xl mb-2">{card.objective}</h3>
-                  </div>
-                  <div className="card-back absolute top-0 left-0 w-full h-full backface-hidden">
-                    <p className="text-sm">{card.explanation}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-6">
-          <a
-            href='/userdashboard'
-            className="text-blue-500 hover:underline text-sm"
-          >
-            Dashboard
-          </a>
-        </div>
       </div>
     </div>
   );

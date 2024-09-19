@@ -11,7 +11,6 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// OpenAI API configuration
 const openaiApiKey: string | undefined = process.env.OPENAI_API_KEY;
 
 if (!openaiApiKey) {
@@ -19,15 +18,63 @@ if (!openaiApiKey) {
   process.exit(1);
 }
 
+// Function to split text into chunks
+function splitTextIntoChunks(text: string, maxChunkLength: number = 4000): string[] {
+  const chunks: string[] = [];
+  let currentChunk = "";
+
+  const sentences = text.split(/(?<=[.!?])\s+/);
+
+  for (const sentence of sentences) {
+    if (currentChunk.length + sentence.length > maxChunkLength) {
+      chunks.push(currentChunk.trim());
+      currentChunk = "";
+    }
+    currentChunk += sentence + " ";
+  }
+
+  if (currentChunk.trim().length > 0) {
+    chunks.push(currentChunk.trim());
+  }
+
+  return chunks;
+}
+
 // Function to summarize text using OpenAI API
 async function summarizeText(text: string, questionCount: number, difficulty: string, questionType: string): Promise<string> {
   try {
-    console.log('Sending text to OpenAI API for summarization...');
-    const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+    console.log('Preparing text for summarization...');
+    const chunks = splitTextIntoChunks(text);
+    let summaries: string[] = [];
+
+    for (let i = 0; i < chunks.length; i++) {
+      console.log(`Summarizing chunk ${i + 1} of ${chunks.length}...`);
+      const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: 'gpt-4',
+        messages: [
+          { role: "system", content: "You are a helpful assistant that summarizes text into a notecard format." },
+          { role: "user", content: `Summarize the following text into key points:\n\n${chunks[i]}` }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      }, {
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      summaries.push(openaiResponse.data.choices[0].message.content);
+    }
+
+    const combinedSummary = summaries.join("\n\n");
+
+    console.log('Creating final summary with questions...');
+    const finalSummaryResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4',
       messages: [
-        { role: "system", content: "You are a helpful assistant that summarizes text into a notecard format." },
-        { role: "user", content: `Summarize the following text into a notecard format with ${questionCount} questions. Difficulty: ${difficulty}. Question type: ${questionType}. Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}. Provide at least 3 objectives and answers, and don't forget to add the "{}":\n\n${text}` }
+        { role: "system", content: "You are a helpful assistant that creates notecards from summaries." },
+        { role: "user", content: `Create a notecard format with ${questionCount} questions from the following summary. Difficulty: ${difficulty}. Question type: ${questionType}. Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}. Provide at least 3 objectives and answers, and don't forget to add the "{}":\n\n${combinedSummary}` }
       ],
       max_tokens: 500,
       temperature: 0.7
@@ -38,9 +85,9 @@ async function summarizeText(text: string, questionCount: number, difficulty: st
       }
     });
 
-    const summary = openaiResponse.data.choices[0].message.content;
-    console.log('Received response from OpenAI:', summary);
-    return summary;
+    const finalSummary = finalSummaryResponse.data.choices[0].message.content;
+    console.log('Received final response from OpenAI:', finalSummary);
+    return finalSummary;
   } catch (error: any) {
     console.error('Error summarizing text:', error.response ? error.response.data : error.message);
     throw new Error('OpenAI API request failed');
@@ -59,7 +106,7 @@ app.post('/scrape', async (req: Request, res: Response) => {
   try {
     console.log('Launching Puppeteer...');
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Necessary for some environments like Docker
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
 
@@ -72,7 +119,7 @@ app.post('/scrape', async (req: Request, res: Response) => {
     console.log('Closing browser...');
     await browser.close();
 
-    console.log('Sending the extracted text to OpenAI for summarization...');
+    console.log('Sending the extracted text for summarization...');
     const summarizedText = await summarizeText(text, questionCount, difficulty, questionType);
 
     console.log('Summarization complete, sending response...');
