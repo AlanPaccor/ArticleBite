@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Moon, SearchIcon, Sun, UserIcon } from 'lucide-react';
+import { Moon, SearchIcon, Sun, UserIcon, Star } from 'lucide-react';
 import Image from 'next/image';
 import logo from '../assets/logosaas.png';
 import { auth } from '../lib/firebase-config';
@@ -9,6 +9,7 @@ import Account from './selections/Account';
 import History from './selections/History';
 import Modal from '../components/Modal';
 import ArticlePic from '../assets/ArticlePic.jpg';  // Add this import at the top of the file
+import Favorites from './selections/Favorites';
 
 const UserDashboard: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -22,6 +23,7 @@ const UserDashboard: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -39,8 +41,24 @@ const UserDashboard: React.FC = () => {
     }
   }, [isDarkMode]);
 
+  useEffect(() => {
+    // Load favorites from localStorage
+    const savedFavorites = localStorage.getItem('favorites');
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
+  }, []);
+
   const handleProfileUpdate = (newPhotoURL: string) => {
     setProfilePicture(newPhotoURL);
+  };
+
+  const toggleFavorite = (id: string) => {
+    const newFavorites = favorites.includes(id)
+      ? favorites.filter(fav => fav !== id)
+      : [...favorites, id];
+    setFavorites(newFavorites);
+    localStorage.setItem('favorites', JSON.stringify(newFavorites));
   };
 
   const renderContent = () => {
@@ -48,7 +66,7 @@ const UserDashboard: React.FC = () => {
       case 'History':
         return <History isDarkMode={isDarkMode} />;
       case 'Favorites':
-        return <div>Favorites Content</div>;
+        return <Favorites isDarkMode={isDarkMode} favorites={favorites} />;
       case 'Settings':
         return <Account isDarkMode={isDarkMode} />;
       default:
@@ -83,6 +101,21 @@ const UserDashboard: React.FC = () => {
                 </svg>
                 <span className="text-center text-white font-semibold">Scrape Article</span>
               </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleFavorite('article');
+                }}
+                className="absolute bottom-2 right-2 z-20"
+              >
+                <Star
+                  className={`w-6 h-6 ${
+                    favorites.includes('article')
+                      ? 'text-yellow-400 fill-current'
+                      : 'text-white'
+                  }`}
+                />
+              </button>
             </a>
             {[...Array(5)].map((_, index) => (
               <div
@@ -162,7 +195,7 @@ const UserDashboard: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 overflow-hidden">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">{activeSection}</h1>
           <div className="flex items-center">
