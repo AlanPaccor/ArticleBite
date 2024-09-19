@@ -8,6 +8,7 @@ import { User } from 'firebase/auth';
 import Account from './selections/Account';
 import History from './selections/History';
 import Modal from '../components/Modal';
+import ArticlePic from '../assets/ArticlePic.jpg';  // Add this import at the top of the file
 
 const UserDashboard: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -45,7 +46,7 @@ const UserDashboard: React.FC = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'History':
-        return <History />;
+        return <History isDarkMode={isDarkMode} />;
       case 'Favorites':
         return <div>Favorites Content</div>;
       case 'Settings':
@@ -53,8 +54,43 @@ const UserDashboard: React.FC = () => {
       default:
         return (
           <div className="grid grid-cols-3 gap-4">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className={`${isDarkMode ? 'bg-gray-800' : 'bg-gray-200'} rounded-lg p-4 h-48`}></div>
+            <a
+              href="/upload"
+              className={`${
+                isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
+              } rounded-lg p-4 h-80 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group`}
+              style={{
+                backgroundImage: `url(${ArticlePic.src})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <div className="absolute inset-0 bg-black opacity-70 group-hover:opacity-30 transition-opacity duration-300"></div>
+              <div className="relative z-10 flex flex-col items-center">
+                <svg
+                  className={`w-12 h-12 mb-2 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span className="text-center text-white font-semibold">Scrape Article</span>
+              </div>
+            </a>
+            {[...Array(5)].map((_, index) => (
+              <div
+                key={index}
+                className={`${
+                  isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
+                } rounded-lg p-4 h-80`}
+              ></div>
             ))}
           </div>
         );
