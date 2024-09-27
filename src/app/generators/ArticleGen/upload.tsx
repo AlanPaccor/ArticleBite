@@ -9,6 +9,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
 import { v4 as uuidv4 } from 'uuid';
 import { Share2, X, Loader } from 'lucide-react';
+import OpenAI from 'openai';
 
 interface Notecard {
   objective: string;
@@ -203,12 +204,55 @@ const MultipleChoiceView = ({ notecards }: { notecards: Notecard[] }) => {
   );
 };
 
-// Add this new component for essay questions
 const EssayView = ({ notecards }: { notecards: Notecard[] }) => {
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  const [scores, setScores] = useState<{ [key: number]: number }>({});
+  const [isChecking, setIsChecking] = useState(false);
 
   const handleAnswerChange = (questionIndex: number, answer: string) => {
     setAnswers(prev => ({ ...prev, [questionIndex]: answer }));
+  };
+
+  const checkAnswers = async () => {
+    setIsChecking(true);
+    const openai = new OpenAI({
+      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+      dangerouslyAllowBrowser: true // Note: This is not recommended for production
+    });
+
+    const newScores: { [key: number]: number } = {};
+
+    for (const [index, notecard] of notecards.entries()) {
+      const userAnswer = answers[index] || '';
+      const correctAnswer = notecard.explanation;
+
+      const prompt = `
+        Question: ${notecard.objective}
+        Correct Answer: ${correctAnswer}
+        User's Answer: ${userAnswer}
+
+        Please evaluate the user's answer based on the correct answer and provide a score out of 10. 
+        Consider factors such as accuracy, completeness, and clarity. 
+        Only respond with a number between 0 and 10, with no additional text.
+      `;
+
+      try {
+        const response = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 5,
+        });
+
+        const score = parseFloat(response.choices[0].message.content || '0');
+        newScores[index] = Math.min(Math.max(score, 0), 10); // Ensure score is between 0 and 10
+      } catch (error) {
+        console.error('Error evaluating essay:', error);
+        newScores[index] = 0; // Default to 0 if there's an error
+      }
+    }
+
+    setScores(newScores);
+    setIsChecking(false);
   };
 
   return (
@@ -226,13 +270,20 @@ const EssayView = ({ notecards }: { notecards: Notecard[] }) => {
               onChange={(e) => handleAnswerChange(questionIndex, e.target.value)}
               placeholder="Type your answer here..."
             />
+            {scores[questionIndex] !== undefined && (
+              <p className="mt-2 font-semibold">
+                Score: {scores[questionIndex].toFixed(2)} / 10
+              </p>
+            )}
           </div>
         ))}
       </div>
       <button
         className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+        onClick={checkAnswers}
+        disabled={isChecking}
       >
-        Check Answers
+        {isChecking ? 'Checking...' : 'Check Answers'}
       </button>
     </div>
   );
@@ -298,45 +349,16 @@ const Upload: React.FC = () => {
 
   const parseNotecards = (text: string): Notecard[] => {
     const cards: Notecard[] = [];
-    const objectiveRegex = /objective(\d+)=\{([^}]+)\}/g;
-    const answerRegex = /answer(\d+)=\{([^}]+)\}/g;
-    const choicesRegex = /choices(\d+)=\{([^}]+)\}/g;
-    const correctAnswerRegex = /correctAnswer(\d+)=\{([^}]+)\}/g;
+    const regex = /objective(\d+)=(.*?)\nanswer\1=(.*?)(?=\n(?:objective|$))/gs;
 
-    const objectives: { [key: string]: string } = {};
-    const answers: { [key: string]: string } = {};
-    const choices: { [key: string]: string[] } = {};
-    const correctAnswers: { [key: string]: string } = {};
-
-    let match: RegExpExecArray | null;
-
-    while ((match = objectiveRegex.exec(text)) !== null) {
-      objectives[match[1]] = match[2].trim();
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      const [, , objective, explanation] = match;
+      cards.push({
+        objective: objective.trim(),
+        explanation: explanation.trim()
+      });
     }
-
-    while ((match = answerRegex.exec(text)) !== null) {
-      answers[match[1]] = match[2].trim();
-    }
-
-    while ((match = choicesRegex.exec(text)) !== null) {
-      choices[match[1]] = match[2].split('|').map(choice => choice.trim());
-    }
-
-    while ((match = correctAnswerRegex.exec(text)) !== null) {
-      correctAnswers[match[1]] = match[2].trim();
-    }
-
-    Object.keys(objectives).forEach(key => {
-      const card: Notecard = {
-        objective: objectives[key],
-        explanation: answers[key] || '', // Use an empty string if no answer is found
-      };
-      if (choices[key]) {
-        card.choices = choices[key];
-        card.correctAnswer = correctAnswers[key];
-      }
-      cards.push(card);
-    });
 
     return cards;
   };
