@@ -203,6 +203,41 @@ const MultipleChoiceView = ({ notecards }: { notecards: Notecard[] }) => {
   );
 };
 
+// Add this new component for essay questions
+const EssayView = ({ notecards }: { notecards: Notecard[] }) => {
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+
+  const handleAnswerChange = (questionIndex: number, answer: string) => {
+    setAnswers(prev => ({ ...prev, [questionIndex]: answer }));
+  };
+
+  return (
+    <div className="flex flex-col items-center">
+      <h2 className="text-2xl font-bold text-center mb-4">Essay Questions</h2>
+      <div className="w-full max-w-4xl">
+        {notecards.map((question, questionIndex) => (
+          <div key={questionIndex} className="mb-8">
+            <h3 className="text-lg font-semibold mb-2">Question {questionIndex + 1}:</h3>
+            <p className="mb-2">{question.objective}</p>
+            <textarea
+              className="w-full p-2 border border-gray-300 rounded"
+              rows={6}
+              value={answers[questionIndex] || ''}
+              onChange={(e) => handleAnswerChange(questionIndex, e.target.value)}
+              placeholder="Type your answer here..."
+            />
+          </div>
+        ))}
+      </div>
+      <button
+        className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+      >
+        Check Answers
+      </button>
+    </div>
+  );
+};
+
 const ComplexQuestionsView = ({ notecards }: { notecards: Notecard[] }) => (
   <div>
     <h2>Complex Questions View</h2>
@@ -292,17 +327,15 @@ const Upload: React.FC = () => {
     }
 
     Object.keys(objectives).forEach(key => {
-      if (answers[key]) {
-        const card: Notecard = {
-          objective: objectives[key],
-          explanation: answers[key],
-        };
-        if (choices[key]) {
-          card.choices = choices[key];
-          card.correctAnswer = correctAnswers[key];
-        }
-        cards.push(card);
+      const card: Notecard = {
+        objective: objectives[key],
+        explanation: answers[key] || '', // Use an empty string if no answer is found
+      };
+      if (choices[key]) {
+        card.choices = choices[key];
+        card.correctAnswer = correctAnswers[key];
       }
+      cards.push(card);
     });
 
     return cards;
@@ -355,7 +388,9 @@ const Upload: React.FC = () => {
       const { summarizedText } = response.data;
       
       if (summarizedText) {
+        console.log('Received summarized text:', summarizedText); // Add this line
         const cards = parseNotecards(summarizedText);
+        console.log('Parsed notecards:', cards); // Add this line
         if (cards.length > 0) {
           setNotecards(cards);
           const docRef = await saveNotecardsToFirestore(cards, user.email);
@@ -367,6 +402,7 @@ const Upload: React.FC = () => {
         setError('No summarized text received from the server.');
       }
     } catch (error: any) {
+      console.error('Error in handleSubmit:', error); // Add this line
       setError(`Failed to fetch or save notes: ${error.message}`);
     } finally {
       setIsLoading(false);
@@ -416,7 +452,7 @@ const Upload: React.FC = () => {
     } else if (selectedQuestionType === 'multiple choice') {
       return <MultipleChoiceView notecards={notecards} />;
     } else if (selectedQuestionType === 'essay') {
-      return <ComplexQuestionsView notecards={notecards} />;
+      return <EssayView notecards={notecards} />;
     } else {
       return <DefaultView notecards={notecards} />;
     }

@@ -80,8 +80,14 @@ correctAnswer{n}={correct choice}
 answer{n}={explanation}
 
 Where n is the question number (1, 2, 3, etc.). Ensure to provide exactly 4 choices for each question.`;
+    } else if (questionType === 'essay') {
+      prompt += `Use the following format for each question:
+objective{n}={question}
+answer{n}={sample answer or key points}
+
+Where n is the question number (1, 2, 3, etc.).`;
     } else {
-      prompt += `Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}. Provide at least 3 objectives and answers, and don't forget to add the "{}":\n\n${combinedSummary}`;
+      prompt += `Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}. Provide at least ${questionCount} objectives and answers, and don't forget to add the "{}":\n\n${combinedSummary}`;
     }
 
     prompt += `\n\n${combinedSummary}`;

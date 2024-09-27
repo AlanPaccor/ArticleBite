@@ -1,0 +1,23 @@
+[33ma550991[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m back from little break. I finished making the multiple choice generator display, and the prompt for it
+[33m70a29d2[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m tried to implement a share link, but  haven't been able to make it work. also tried to implement language but decided to wait until most of the site is done. now i'll try to make a new generator
+[33md9ec618[m done making it possible to have more than 1 generator
+[33m5ded08d[m done adding favotites function and fixed history page. now working on generators page, and making it possible to have more than 1 generator.
+[33mbfeb6ce[m done with the article dashboard display. now working on the favorites page
+[33mdf7a2f8[m Done with working carousel and flipping card with the answer showing after flip. Now need to make a mock design for the dashboard grid
+[33m7f8ccda[m done with flipping cards, and selectors for the notecards, now going to work on carousel
+[33m22d806f[m didn't add feedback, will make that another time and place it somewhere else. i made the help, tos, and privacy. now will work on note card carousel and flips.
+[33m5c8a563[m done with upload image,and made my own modal. Now working on feedback, tearms, etc pages
+[33m678a320[m started working on user pfp's and the working modal. need to fix the modal or just create one myself. too many issues.
+[33m9dfbbd6[m added usernames, now adding profile pictures
+[33mf88064f[m made the History page and made it functional. The generated notecards get sent to the db and then pulled. Need to wait to see if they get deleted after 14 days. Now need to fix the dark and light mode on the history page, and then work on the next feature
+[33mfd71ac2[m created dashboard, moved user settings into the userDashboard. Added features section in landing page. Need to work on the user sign up username creation, and dashboard pfp, and edit profile section, and disaply grid for generators that could be used. Need to start implementing a database for users past notecards. Then also work on the notecards display and carousel.
+[33mbf201bf[m updates footer
+[33mffb8b6f[m Added a features section
+[33m0cced06[m update
+[33m7d41cdb[m done converting, login, register, scraper work. Now need to coontinue with other pages
+[33m1c20124[m converting all react js code to nextjs code
+[33m622ede2[m done with scraping and chatgpt functionality, and the notecard details are shown on the page
+[33m2f7e874[m Added the login/register feature, and auth and the upload page. Now working on the web scraper functionality
+[33m7ef5e24[m basic file structure
+[33m5471dea[m Initialize project using Create React App
+[33m37acadb[m Initial commit
