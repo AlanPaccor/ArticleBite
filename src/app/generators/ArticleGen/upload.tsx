@@ -13,6 +13,8 @@ import { Share2, X, Loader } from 'lucide-react';
 interface Notecard {
   objective: string;
   explanation: string;
+  choices?: string[];
+  correctAnswer?: string;
 }
 
 const Card = ({ objective, explanation, isFlipped, onClick }: { objective: string; explanation: string; isFlipped: boolean; onClick: () => void }) => (
@@ -25,7 +27,7 @@ const Card = ({ objective, explanation, isFlipped, onClick }: { objective: strin
     }}
   >
     {/* Front Side (Question) */}
-    <div className={` backface-hidden transition-opacity duration-500 ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
+    <div className={`backface-hidden transition-opacity duration-500 ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
       <div className="text-center px-4">
         <h2 className="text-xl font-bold mb-4">Question</h2>
         <p className="text-lg">{objective}</p>
@@ -33,7 +35,7 @@ const Card = ({ objective, explanation, isFlipped, onClick }: { objective: strin
     </div>
     
     {/* Back Side (Answer) */}
-    <div className={` backface-hidden rotate-y-180 transition-opacity duration-500 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`backface-hidden rotate-y-180 transition-opacity duration-500 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}>
       <div className="text-center px-4">
         <h2 className="text-xl font-bold mb-4">Answer</h2>
         <p className="text-lg">{explanation}</p>
@@ -42,10 +44,8 @@ const Card = ({ objective, explanation, isFlipped, onClick }: { objective: strin
   </div>
 );
 
-
-
 const Carousel = ({ children }: { children: React.ReactNode }) => {
-  const [active, setActive] = useState(0); // Set the starting card to the first one
+  const [active, setActive] = useState(0);
   const count = React.Children.count(children);
   const MAX_VISIBILITY = 3;
 
@@ -88,22 +88,150 @@ const Carousel = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
+  const [flippedCards, setFlippedCards] = useState<number[]>([]);
 
-export default function UploadPage() {
+  const handleCardFlip = (index: number) => {
+    setFlippedCards((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-center mb-4">Carousel View</h2>
+      <Carousel>
+        {notecards.map((card, index) => (
+          <Card
+            key={index}
+            objective={card.objective}
+            explanation={card.explanation}
+            isFlipped={flippedCards.includes(index)}
+            onClick={() => handleCardFlip(index)}
+          />
+        ))}
+      </Carousel>
+    </div>
+  );
+};
+
+interface MultipleChoiceQuestion extends Notecard {
+  choices: string[];
+  correctAnswer: string;
+}
+
+const MultipleChoiceView = ({ notecards }: { notecards: Notecard[] }) => {
+  const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string }>({});
+  const [showResults, setShowResults] = useState(false);
+  const [score, setScore] = useState(0);
+
+  const handleAnswerSelect = (questionIndex: number, answer: string) => {
+    setSelectedAnswers(prev => ({ ...prev, [questionIndex]: answer }));
+  };
+
+  const checkAnswers = () => {
+    let correctCount = 0;
+    notecards.forEach((question, index) => {
+      if (selectedAnswers[index] === question.correctAnswer) {
+        correctCount++;
+      }
+    });
+    setScore(correctCount);
+    setShowResults(true);
+  };
+
+  return (
+    <div className="flex flex-col items-center">
+      <h2 className="text-2xl font-bold text-center mb-4">Multiple Choice Questions</h2>
+      <div className="w-full max-w-4xl">
+        {notecards.map((question, questionIndex) => (
+          <div key={questionIndex} className="mb-8 flex">
+            <div className="w-1/2 pr-4">
+              <h3 className="text-lg font-semibold mb-2">Question {questionIndex + 1}:</h3>
+              <p>{question.objective}</p>
+            </div>
+            <div className="w-1/2">
+              {question.choices ? (
+                question.choices.map((choice, choiceIndex) => (
+                  <div key={choiceIndex} className="mb-2">
+                    <label className={`flex items-center p-2 rounded ${
+                      showResults
+                        ? selectedAnswers[questionIndex] === choice
+                          ? choice === question.correctAnswer
+                            ? 'bg-green-200'
+                            : 'bg-red-200'
+                          : choice === question.correctAnswer
+                            ? 'bg-green-200'
+                            : ''
+                        : 'hover:bg-gray-100'
+                    }`}>
+                      <input
+                        type="radio"
+                        name={`question-${questionIndex}`}
+                        value={choice}
+                        checked={selectedAnswers[questionIndex] === choice}
+                        onChange={() => handleAnswerSelect(questionIndex, choice)}
+                        disabled={showResults}
+                        className="mr-2"
+                      />
+                      {String.fromCharCode(65 + choiceIndex)}. {choice}
+                    </label>
+                  </div>
+                ))
+              ) : (
+                <p>No choices available for this question.</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 flex items-center">
+        <button
+          onClick={checkAnswers}
+          disabled={showResults}
+          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+        >
+          Check Answers
+        </button>
+        {showResults && (
+          <p className="ml-4 text-lg font-semibold">
+            Score: {score} / {notecards.length}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const ComplexQuestionsView = ({ notecards }: { notecards: Notecard[] }) => (
+  <div>
+    <h2>Complex Questions View</h2>
+    {/* Implement your complex questions display here */}
+  </div>
+);
+
+const DefaultView = ({ notecards }: { notecards: Notecard[] }) => (
+  <div>
+    <h2>Default View</h2>
+    {/* Implement your default view here */}
+  </div>
+);
+
+const Upload: React.FC = () => {
   const [link, setLink] = useState<string>('');
   const [notecards, setNotecards] = useState<Notecard[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [questionCount, setQuestionCount] = useState<number>(5);
   const [difficulty, setDifficulty] = useState<string>('Easy');
-  const [questionType, setQuestionType] = useState<string>('Multiple Choice');
+  const [selectedQuestionType, setSelectedQuestionType] = useState<string>('true/false');
   const [progress, setProgress] = useState<number>(0);
   const [progressStep, setProgressStep] = useState<string>('');
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [shareUrl, setShareUrl] = useState<string>('');
   const [logs, setLogs] = useState<string[]>([]);
+  const [showGenerateButton, setShowGenerateButton] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -130,16 +258,20 @@ export default function UploadPage() {
   };
 
   const handleQuestionTypeChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    setQuestionType(event.target.value);
+    setSelectedQuestionType(event.target.value);
   };
 
   const parseNotecards = (text: string): Notecard[] => {
     const cards: Notecard[] = [];
     const objectiveRegex = /objective(\d+)=\{([^}]+)\}/g;
     const answerRegex = /answer(\d+)=\{([^}]+)\}/g;
+    const choicesRegex = /choices(\d+)=\{([^}]+)\}/g;
+    const correctAnswerRegex = /correctAnswer(\d+)=\{([^}]+)\}/g;
 
     const objectives: { [key: string]: string } = {};
     const answers: { [key: string]: string } = {};
+    const choices: { [key: string]: string[] } = {};
+    const correctAnswers: { [key: string]: string } = {};
 
     let match: RegExpExecArray | null;
 
@@ -151,12 +283,25 @@ export default function UploadPage() {
       answers[match[1]] = match[2].trim();
     }
 
+    while ((match = choicesRegex.exec(text)) !== null) {
+      choices[match[1]] = match[2].split('|').map(choice => choice.trim());
+    }
+
+    while ((match = correctAnswerRegex.exec(text)) !== null) {
+      correctAnswers[match[1]] = match[2].trim();
+    }
+
     Object.keys(objectives).forEach(key => {
       if (answers[key]) {
-        cards.push({
+        const card: Notecard = {
           objective: objectives[key],
-          explanation: answers[key]
-        });
+          explanation: answers[key],
+        };
+        if (choices[key]) {
+          card.choices = choices[key];
+          card.correctAnswer = correctAnswers[key];
+        }
+        cards.push(card);
       }
     });
 
@@ -181,6 +326,7 @@ export default function UploadPage() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setShowGenerateButton(false);
     if (!user || !user.email) {
       router.push('/registration/login');
       return;
@@ -202,7 +348,7 @@ export default function UploadPage() {
           email: user.email,
           questionCount,
           difficulty,
-          questionType
+          questionType: selectedQuestionType
         }
       );
 
@@ -225,12 +371,6 @@ export default function UploadPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCardFlip = (index: number) => {
-    setFlippedCards((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
   };
 
   const handleShare = () => {
@@ -270,6 +410,18 @@ export default function UploadPage() {
     };
   }, [isLoading]);
 
+  const renderContent = () => {
+    if (['true/false', 'short answer'].includes(selectedQuestionType)) {
+      return <CarouselView notecards={notecards} />;
+    } else if (selectedQuestionType === 'multiple choice') {
+      return <MultipleChoiceView notecards={notecards} />;
+    } else if (selectedQuestionType === 'essay') {
+      return <ComplexQuestionsView notecards={notecards} />;
+    } else {
+      return <DefaultView notecards={notecards} />;
+    }
+  };
+
   if (!user) {
     return <div>Loading...</div>;
   }
@@ -292,7 +444,7 @@ export default function UploadPage() {
               <div className="flex justify-between">
                 <label className="w-1/3">
                   Question Count:
-                  <select value={questionCount} onChange={handleQuestionCountChange} className="ml-2">
+                  <select value={questionCount} onChange={handleQuestionCountChange} className="ml-2 border border-gray-300 rounded">
                     <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={15}>15</option>
@@ -301,7 +453,7 @@ export default function UploadPage() {
                 </label>
                 <label className="w-1/3">
                   Difficulty:
-                  <select value={difficulty} onChange={handleDifficultyChange} className="ml-2">
+                  <select value={difficulty} onChange={handleDifficultyChange} className="ml-2 border border-gray-300 rounded">
                     <option value="Easy">Easy</option>
                     <option value="Medium">Medium</option>
                     <option value="Hard">Hard</option>
@@ -309,22 +461,24 @@ export default function UploadPage() {
                 </label>
                 <label className="w-1/3">
                   Question Type:
-                  <select value={questionType} onChange={handleQuestionTypeChange} className="ml-2">
-                    <option value="Multiple Choice">Multiple Choice</option>
-                    <option value="True/False">True/False</option>
-                    <option value="Short Answer">Short Answer</option>
-                    <option value="Essay">Essay</option>
+                  <select value={selectedQuestionType} onChange={handleQuestionTypeChange} className="ml-2 border border-gray-300 rounded">
+                    <option value="true/false">True/False</option>
+                    <option value="short answer">Short Answer</option>
+                    <option value="multiple choice">Multiple Choice</option>
+                    <option value="essay">Essay</option>
                   </select>
                 </label>
               </div>
               {error && <p className="text-red-500">{error}</p>}
-              <button
-                type="submit"
-                className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Processing...' : 'Scrape and Generate Notes'}
-              </button>
+              {showGenerateButton && (
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Processing...' : 'Scrape and Generate Notes'}
+                </button>
+              )}
               {isLoading && (
                 <div className="mt-4">
                   <div className="flex items-center justify-center mb-2">
@@ -349,17 +503,7 @@ export default function UploadPage() {
             >
               <Share2 className="mr-2" /> Share These Notes
             </button>
-            <Carousel>
-              {notecards.map((notecard, index) => (
-                <Card
-                  key={index}
-                  objective={notecard.objective}
-                  explanation={notecard.explanation}
-                  isFlipped={flippedCards.includes(index)}
-                  onClick={() => handleCardFlip(index)}
-                />
-              ))}
-            </Carousel>
+            {renderContent()}
           </>
         )}
       </div>
@@ -392,4 +536,6 @@ export default function UploadPage() {
       )}
     </div>
   );
-}
+};
+
+export default Upload;

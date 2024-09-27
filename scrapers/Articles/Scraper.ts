@@ -70,13 +70,29 @@ async function summarizeText(text: string, questionCount: number, difficulty: st
     const combinedSummary = summaries.join("\n\n");
 
     console.log('Creating final summary with questions...');
+    let prompt = `Create a notecard format with ${questionCount} questions from the following summary. Difficulty: ${difficulty}. Question type: ${questionType}. `;
+
+    if (questionType === 'multiple choice') {
+      prompt += `Use the following format for each question:
+objective{n}={question}
+choices{n}={choice1|choice2|choice3|choice4}
+correctAnswer{n}={correct choice}
+answer{n}={explanation}
+
+Where n is the question number (1, 2, 3, etc.). Ensure to provide exactly 4 choices for each question.`;
+    } else {
+      prompt += `Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}. Provide at least 3 objectives and answers, and don't forget to add the "{}":\n\n${combinedSummary}`;
+    }
+
+    prompt += `\n\n${combinedSummary}`;
+
     const finalSummaryResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4',
       messages: [
         { role: "system", content: "You are a helpful assistant that creates notecards from summaries." },
-        { role: "user", content: `Create a notecard format with ${questionCount} questions from the following summary. Difficulty: ${difficulty}. Question type: ${questionType}. Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}. Provide at least 3 objectives and answers, and don't forget to add the "{}":\n\n${combinedSummary}` }
+        { role: "user", content: prompt }
       ],
-      max_tokens: 500,
+      max_tokens: 1000,
       temperature: 0.7
     }, {
       headers: {
