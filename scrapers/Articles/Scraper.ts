@@ -50,7 +50,7 @@ async function summarizeText(text: string, questionCount: number, difficulty: st
     for (let i = 0; i < chunks.length; i++) {
       console.log(`Summarizing chunk ${i + 1} of ${chunks.length}...`);
       const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo', // Changed to GPT-3.5-turbo
         messages: [
           { role: "system", content: "You are a helpful assistant that summarizes text into a notecard format." },
           { role: "user", content: `Summarize the following text into key points:\n\n${chunks[i]}` }
@@ -79,21 +79,21 @@ choices{n}={choice1|choice2|choice3|choice4}
 correctAnswer{n}={correct choice}
 answer{n}={explanation}
 
-Where n is the question number (1, 2, 3, etc.). Ensure to provide exactly 4 choices for each question.`;
+Where n is the question number (1, 2, 3, etc.). Ensure to provide exactly 4 choices for each question. Do not include curly braces in the actual content.`;
     } else if (questionType === 'essay') {
       prompt += `Use the following format for each question:
 objective{n}={question}
 answer{n}={sample answer or key points}
 
-Where n is the question number (1, 2, 3, etc.).`;
+Where n is the question number (1, 2, 3, etc.). Do not include curly braces in the actual content.`;
     } else {
-      prompt += `Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}. Provide at least ${questionCount} objectives and answers, and don't forget to add the "{}":\n\n${combinedSummary}`;
+      prompt += `Use the following format: objective1={objective1}, objective2={objective2}, ..., answer1={answer1}, answer2={answer2}. Provide at least ${questionCount} objectives and answers. Do not include curly braces in the actual content.`;
     }
 
     prompt += `\n\n${combinedSummary}`;
 
     const finalSummaryResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4',
+      model: 'gpt-4', // Kept as GPT-4 for final summary and question generation
       messages: [
         { role: "system", content: "You are a helpful assistant that creates notecards from summaries." },
         { role: "user", content: prompt }

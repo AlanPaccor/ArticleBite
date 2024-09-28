@@ -89,7 +89,7 @@ const UserDashboard: React.FC = () => {
           {
             id: 'algebra',
             title: 'Algebra',
-            href: '/generators/AlgebraGen',
+            href: '/generators/Math/Addition',
             image: AlgebraPic,
             icon: (
               <path

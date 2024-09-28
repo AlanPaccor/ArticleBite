@@ -349,15 +349,31 @@ const Upload: React.FC = () => {
 
   const parseNotecards = (text: string): Notecard[] => {
     const cards: Notecard[] = [];
-    const regex = /objective(\d+)=(.*?)\nanswer\1=(.*?)(?=\n(?:objective|$))/gs;
+    let regex;
 
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-      const [, , objective, explanation] = match;
-      cards.push({
-        objective: objective.trim(),
-        explanation: explanation.trim()
-      });
+    if (selectedQuestionType === 'multiple choice') {
+      regex = /objective(\d+)=\{?(.*?)\}?\nchoices\1=\{?(.*?)\}?\ncorrectAnswer\1=\{?(.*?)\}?\nanswer\1=\{?(.*?)\}?(?=\n(?:objective|$))/gs;
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        const [, , objective, choices, correctAnswer, explanation] = match;
+        cards.push({
+          objective: objective.trim(),
+          choices: choices.split('|').map(choice => choice.trim()),
+          correctAnswer: correctAnswer.trim(),
+          explanation: explanation.trim()
+        });
+      }
+    } else {
+      // For true/false, short answer, and essay
+      regex = /objective(\d+)=\{?(.*?)\}?\nanswer\1=\{?(.*?)\}?(?=\n(?:objective|$))/gs;
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        const [, , objective, explanation] = match;
+        cards.push({
+          objective: objective.trim(),
+          explanation: explanation.trim()
+        });
+      }
     }
 
     return cards;
@@ -410,9 +426,9 @@ const Upload: React.FC = () => {
       const { summarizedText } = response.data;
       
       if (summarizedText) {
-        console.log('Received summarized text:', summarizedText); // Add this line
+        console.log('Received summarized text:', summarizedText);
         const cards = parseNotecards(summarizedText);
-        console.log('Parsed notecards:', cards); // Add this line
+        console.log('Parsed notecards:', cards);
         if (cards.length > 0) {
           setNotecards(cards);
           const docRef = await saveNotecardsToFirestore(cards, user.email);
@@ -424,7 +440,7 @@ const Upload: React.FC = () => {
         setError('No summarized text received from the server.');
       }
     } catch (error: any) {
-      console.error('Error in handleSubmit:', error); // Add this line
+      console.error('Error in handleSubmit:', error);
       setError(`Failed to fetch or save notes: ${error.message}`);
     } finally {
       setIsLoading(false);
