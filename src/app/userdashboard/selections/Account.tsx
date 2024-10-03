@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, updateProfile, updateEmail, updatePassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/app/lib/firebase-config';
+import { auth, db } from '@/app/lib/firebase-config'; // Ensure db is imported here
+import { doc, setDoc } from 'firebase/firestore'; // Assuming Firestore is used
 
 export default function Account({ isDarkMode }: { isDarkMode: boolean }) {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -44,6 +45,10 @@ export default function Account({ isDarkMode }: { isDarkMode: boolean }) {
       if (newUsername !== user.displayName) {
         await updateProfile(user, { displayName: newUsername });
       }
+      // Save the new username to Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        displayName: newUsername, // Update displayName in Firestore
+      }, { merge: true });
 
       // Update email if it is different
       if (newEmail !== user.email) {

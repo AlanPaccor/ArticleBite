@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Moon, SearchIcon, Sun, UserIcon, Star } from 'lucide-react';
 import Image from 'next/image';
 import logo from '../assets/logosaas.png';
-import { auth } from '../lib/firebase-config';
+import { auth, db } from '../lib/firebase-config'; // Ensure db is imported here
 import { User } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore'; // Firestore functions
 import Account from './selections/Account';
 import History from './selections/History';
 import Modal from '../components/Modal';
@@ -25,6 +26,7 @@ const UserDashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [fullName, setFullName] = useState<string | null>(null); // Keep this for full name
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -54,12 +56,20 @@ const UserDashboard: React.FC = () => {
     setProfilePicture(newPhotoURL);
   };
 
-  const toggleFavorite = (id: string) => {
+  const toggleFavorite = async (id: string) => {
     const newFavorites = favorites.includes(id)
       ? favorites.filter(fav => fav !== id)
       : [...favorites, id];
+    
     setFavorites(newFavorites);
     localStorage.setItem('favorites', JSON.stringify(newFavorites));
+
+    // Save favorites to Firestore
+    if (user) {
+      await setDoc(doc(db, "users", user.uid), {
+        favorites: newFavorites,
+      }, { merge: true });
+    }
   };
 
   const renderContent = () => {
@@ -89,7 +99,7 @@ const UserDashboard: React.FC = () => {
           {
             id: 'algebra',
             title: 'Algebra',
-            href: '/generators/Math/Addition',
+            href: '/generators/Math/Algebra',
             image: AlgebraPic,
             icon: (
               <path
@@ -163,6 +173,22 @@ const UserDashboard: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          setFullName(userDoc.data().fullName);
+          setProfilePicture(user.photoURL);
+          setActiveSection(userDoc.data().displayName); // Update display name
+          setFavorites(userDoc.data().favorites || []); // Load favorites from Firestore
+          localStorage.setItem('favorites', JSON.stringify(userDoc.data().favorites || [])); // Sync with localStorage
+        }
+      }
+    };
+    fetchUserData();
+  }, [user]);
+
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
       {/* Left Sidebar */}
@@ -181,7 +207,7 @@ const UserDashboard: React.FC = () => {
               <UserIcon className={`w-8 h-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
             </div>
           )}
-          <h2 className="text-lg font-semibold">{user?.displayName || 'Guest'}</h2>
+          <h2 className="text-lg font-semibold">{user?.displayName || 'Guest'}</h2> {/* Change back to displayName */}
 
           <button 
             className={`${isDarkMode ? 'text-white' : 'text-gray-900'} mx-4 rounded text-sm`}

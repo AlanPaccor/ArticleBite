@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore'; // Firestore functions
 import Link from 'next/link';
@@ -30,11 +30,14 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Set the displayName to the username during user creation
+      await updateProfile(user, { displayName: username }); // Add this line
+
       // Store user details in Firestore
       await setDoc(doc(db, "users", user.uid), {
         fullName,
         email,
-        username, // Save username
+        displayName: username, // Save username as displayName
         createdAt: new Date(),
       });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { getFirestore, collection, query, where, orderBy, getDocs, Timestamp } from 'firebase/firestore';
+import { getFirestore, collection, query, where, orderBy, getDocs, Timestamp, deleteDoc, doc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 
@@ -67,10 +67,10 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
   
     try {
       console.log('Fetching notecards for user:', userEmail);
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
       const q = query(
         collection(db, 'notesHistory'),
         where('userEmail', '==', userEmail),
-        where('createdAt', '>=', Timestamp.fromDate(new Date(Date.now() - 14 * 24 * 60 * 60 * 1000))),
         orderBy('createdAt', 'desc')
       );
       const querySnapshot = await getDocs(q);
@@ -81,17 +81,38 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
       const sets = querySnapshot.docs.map(doc => {
         const data = doc.data() as NotecardSet;
         return {
+          id: doc.id,
           ...data,
           createdAt: data.createdAt.toDate()
         };
       });
       console.log('Fetched notecards:', sets);
-      setNotecardSets(sets);
+      
+      // Filter out sets older than 14 days
+      const recentSets = sets.filter(set => set.createdAt >= fourteenDaysAgo);
+      setNotecardSets(recentSets);
+
+      // Delete older sets
+      const setsToDelete = sets.filter(set => set.createdAt < fourteenDaysAgo);
+      await deleteOldSets(setsToDelete);
+
     } catch (error) {
       console.error('Error fetching notecards:', error);
-      setError(`Failed to fetch notecards: ${error.message}`);
+      setError(`Failed to fetch notecards: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteOldSets = async (setsToDelete: NotecardSet[]) => {
+    try {
+      const deletePromises = setsToDelete.map(set => 
+        deleteDoc(doc(db, 'notesHistory', set.id))
+      );
+      await Promise.all(deletePromises);
+      console.log(`Deleted ${setsToDelete.length} old notecard sets`);
+    } catch (error) {
+      console.error('Error deleting old notecard sets:', error);
     }
   };
 
