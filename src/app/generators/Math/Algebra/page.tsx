@@ -1,11 +1,11 @@
 import Footer from "@/app/sections/Footer";
-import { Header } from "@/app/sections/Header";
 import UploadAlgebra from "./uploadAlgebra";
+import { SecondHeader } from "@/app/sections/SecondHeader";
 
 export default function Upload() {
   return (
     <>
-      <Header />
+      <SecondHeader />
       <UploadAlgebra />
       <Footer />
     </>

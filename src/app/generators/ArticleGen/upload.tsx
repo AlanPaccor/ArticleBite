@@ -10,6 +10,7 @@ import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
 import { v4 as uuidv4 } from 'uuid';
 import { Share2, X, Loader } from 'lucide-react';
 import OpenAI from 'openai';
+import { useTheme } from '../../contexts/ThemeContext'; // Add this import
 
 interface Notecard {
   objective: string;
@@ -20,7 +21,7 @@ interface Notecard {
 
 const Card = ({ objective, explanation, isFlipped, onClick }: { objective: string; explanation: string; isFlipped: boolean; onClick: () => void }) => (
   <div
-    className={`card w-80 h-96 bg-blue-200 rounded-lg shadow-lg text-gray-800 cursor-pointer transition-transform duration-500 transform ${isFlipped ? 'rotate-y-180' : ''}`}
+    className={`card w-full max-w-2xl h-120 bg-blue-200 rounded-lg shadow-lg text-gray-800 cursor-pointer transition-transform duration-500 transform ${isFlipped ? 'rotate-y-180' : ''}`}
     onClick={onClick}
     style={{
       perspective: '1000px',
@@ -29,17 +30,17 @@ const Card = ({ objective, explanation, isFlipped, onClick }: { objective: strin
   >
     {/* Front Side (Question) */}
     <div className={`backface-hidden transition-opacity duration-500 ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
-      <div className="text-center px-4">
-        <h2 className="text-xl font-bold mb-4">Question</h2>
-        <p className="text-lg">{objective}</p>
+      <div className="text-center px-8 py-10">
+        <h2 className="text-3xl font-bold mb-8">Question</h2>
+        <p className="text-2xl">{objective}</p>
       </div>
     </div>
     
     {/* Back Side (Answer) */}
     <div className={`backface-hidden rotate-y-180 transition-opacity duration-500 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="text-center px-4">
-        <h2 className="text-xl font-bold mb-4">Answer</h2>
-        <p className="text-lg">{explanation}</p>
+      <div className="text-center px-8 py-10">
+        <h2 className="text-3xl font-bold mb-8">Answer</h2>
+        <p className="text-2xl">{explanation}</p>
       </div>
     </div>
   </div>
@@ -90,6 +91,7 @@ const Carousel = ({ children }: { children: React.ReactNode }) => {
 };
 
 const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
 
   const handleCardFlip = (index: number) => {
@@ -98,20 +100,44 @@ const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
     );
   };
 
+  const goToPreviousCard = () => {
+    setCurrentCardIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
+  };
+
+  const goToNextCard = () => {
+    setCurrentCardIndex((prevIndex) => (prevIndex < notecards.length - 1 ? prevIndex + 1 : prevIndex));
+  };
+
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-center mb-4">Carousel View</h2>
-      <Carousel>
-        {notecards.map((card, index) => (
+    <div className="flex flex-col items-center w-full max-w-4xl mx-auto px-4">
+      <h2 className="text-3xl font-bold text-center mb-8">Flashcards</h2>
+      <div className="w-full flex items-center justify-center space-x-4">
+        <button
+          onClick={goToPreviousCard}
+          disabled={currentCardIndex === 0}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <div className="w-full max-w-2xl aspect-[3/2] flex items-center justify-center">
           <Card
-            key={index}
-            objective={card.objective}
-            explanation={card.explanation}
-            isFlipped={flippedCards.includes(index)}
-            onClick={() => handleCardFlip(index)}
+            objective={notecards[currentCardIndex].objective}
+            explanation={notecards[currentCardIndex].explanation}
+            isFlipped={flippedCards.includes(currentCardIndex)}
+            onClick={() => handleCardFlip(currentCardIndex)}
           />
-        ))}
-      </Carousel>
+        </div>
+        <button
+          onClick={goToNextCard}
+          disabled={currentCardIndex === notecards.length - 1}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+      <p className="mt-6 text-xl">
+        Question {currentCardIndex + 1} of {notecards.length}
+      </p>
     </div>
   );
 };
@@ -159,12 +185,12 @@ const MultipleChoiceView = ({ notecards }: { notecards: Notecard[] }) => {
                       showResults
                         ? selectedAnswers[questionIndex] === choice
                           ? choice === question.correctAnswer
-                            ? 'bg-green-200'
-                            : 'bg-red-200'
+                            ? 'bg-green-200 dark:bg-green-700'
+                            : 'bg-red-200 dark:bg-red-700'
                           : choice === question.correctAnswer
-                            ? 'bg-green-200'
+                            ? 'bg-green-200 dark:bg-green-700'
                             : ''
-                        : 'hover:bg-gray-100'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}>
                       <input
                         type="radio"
@@ -318,6 +344,8 @@ const Upload: React.FC = () => {
   const [shareUrl, setShareUrl] = useState<string>('');
   const [logs, setLogs] = useState<string[]>([]);
   const [showGenerateButton, setShowGenerateButton] = useState(true);
+  const [customQuestionCount, setCustomQuestionCount] = useState<string>('');
+  const { isDarkMode } = useTheme(); // Add this line
   const router = useRouter();
 
   useEffect(() => {
@@ -336,7 +364,23 @@ const Upload: React.FC = () => {
   };
 
   const handleQuestionCountChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    setQuestionCount(parseInt(event.target.value));
+    const value = event.target.value;
+    if (value === 'custom') {
+      setQuestionCount(0);
+    } else {
+      setQuestionCount(parseInt(value));
+      setCustomQuestionCount(''); // Reset custom count when selecting a preset
+    }
+  };
+
+  const handleCustomQuestionCountChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setCustomQuestionCount(value);
+    if (value) {
+      setQuestionCount(parseInt(value));
+    } else {
+      setQuestionCount(0);
+    }
   };
 
   const handleDifficultyChange = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -501,33 +545,52 @@ const Upload: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-4xl p-8 rounded-lg shadow-xl">
+    <div className={`min-h-screen flex flex-col items-center justify-center p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+      <div className={`w-full max-w-4xl p-8 rounded-lg shadow-xl ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
         {notecards.length === 0 ? (
           <>
-            <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Upload A Link To Generate Notes!</h1>
-            <p className="text-center text-gray-600 mb-6">Provide a URL and we'll scrape the content to generate flashcards for you.</p>
+            <h1 className={`text-2xl font-bold text-center mb-4 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Upload A Link To Generate Notes!</h1>
+            <p className={`text-center mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Provide a URL and we'll scrape the content to generate flashcards for you.</p>
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
               <input
                 type="text"
                 value={link}
                 onChange={handleInputChange}
                 placeholder="Enter a URL"
-                className="w-full border border-gray-300 p-2 rounded"
+                className={`w-full border p-2 rounded ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'}`}
               />
               <div className="flex justify-between">
-                <label className="w-1/3">
+                <label className="w-1/3 flex items-center">
                   Question Count:
-                  <select value={questionCount} onChange={handleQuestionCountChange} className="ml-2 border border-gray-300 rounded">
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={15}>15</option>
-                    <option value={20}>20</option>
-                  </select>
+                  {questionCount === 0 || customQuestionCount !== '' ? (
+                    <input
+                      type="number"
+                      value={customQuestionCount}
+                      onChange={handleCustomQuestionCountChange}
+                      placeholder="Enter number"
+                      className={`ml-2 w-20 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded p-1`}
+                    />
+                  ) : (
+                    <select 
+                      value={questionCount.toString()} 
+                      onChange={handleQuestionCountChange} 
+                      className={`ml-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded p-1`}
+                    >
+                      <option value="5">5</option>
+                      <option value="10">10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  )}
                 </label>
                 <label className="w-1/3">
                   Difficulty:
-                  <select value={difficulty} onChange={handleDifficultyChange} className="ml-2 border border-gray-300 rounded">
+                  <select 
+                    value={difficulty} 
+                    onChange={handleDifficultyChange} 
+                    className={`ml-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded`}
+                  >
                     <option value="Easy">Easy</option>
                     <option value="Medium">Medium</option>
                     <option value="Hard">Hard</option>
@@ -535,7 +598,11 @@ const Upload: React.FC = () => {
                 </label>
                 <label className="w-1/3">
                   Question Type:
-                  <select value={selectedQuestionType} onChange={handleQuestionTypeChange} className="ml-2 border border-gray-300 rounded">
+                  <select 
+                    value={selectedQuestionType} 
+                    onChange={handleQuestionTypeChange} 
+                    className={`ml-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded`}
+                  >
                     <option value="true/false">True/False</option>
                     <option value="short answer">Short Answer</option>
                     <option value="multiple choice">Multiple Choice</option>
@@ -547,7 +614,7 @@ const Upload: React.FC = () => {
               {showGenerateButton && (
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
+                  className={`${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white py-2 rounded transition`}
                   disabled={isLoading}
                 >
                   {isLoading ? 'Processing...' : 'Scrape and Generate Notes'}
@@ -561,7 +628,7 @@ const Upload: React.FC = () => {
                   </div>
                   <div className="mt-4 max-h-40 overflow-y-auto">
                     {logs.map((log, index) => (
-                      <p key={index} className="text-sm text-gray-600">{log}</p>
+                      <p key={index} className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{log}</p>
                     ))}
                   </div>
                 </div>
@@ -570,10 +637,10 @@ const Upload: React.FC = () => {
           </>
         ) : (
           <>
-            <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Generated Notes</h1>
+            <h1 className={`text-2xl font-bold text-center mb-4 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Generated Notes</h1>
             <button
               onClick={handleShare}
-              className="mb-4 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition flex items-center"
+              className={`mb-4 ${isDarkMode ? 'bg-green-600 hover:bg-green-700' : 'bg-green-500 hover:bg-green-600'} text-white py-2 px-4 rounded transition flex items-center`}
             >
               <Share2 className="mr-2" /> Share These Notes
             </button>

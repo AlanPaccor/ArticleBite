@@ -10,10 +10,16 @@ import { fileURLToPath } from 'url';
 import { YoutubeTranscript } from 'youtube-transcript';
 import OpenAI from 'openai';
 import { YTScraper } from './YTScraper';
-
+import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import { Readable } from 'stream';
+import { execFile, exec } from 'child_process';
+import Ffmpeg from 'fluent-ffmpeg';
+import pdf from 'pdf-parse/lib/pdf-parse.js';
+import { promises as fs } from 'fs';
+import puppeteer from 'puppeteer';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 // Construct the path to the .env file
 const envPath = path.resolve(__dirname, '../../.env');
 console.log('Loading .env file from:', envPath);
@@ -261,16 +267,130 @@ export class YTScraper {
   }
 }
 
+// Add this new class for MP4 processing
+class MP4Processor {
+  private openai: OpenAI;
+  private ffmpegPath: string;
+
+  constructor(apiKey: string) {
+    this.openai = new OpenAI({ apiKey });
+    this.ffmpegPath = process.env.FFMPEG_PATH || 'ffmpeg';
+    console.log('FFmpeg path:', this.ffmpegPath);
+  }
+
+  async processMP4(file: Express.Multer.File): Promise<string> {
+    try {
+      const audioFile = await this.extractAudioFromMP4(file);
+      const transcript = await this.transcribeAudio(audioFile);
+      fs.unlinkSync(audioFile); // Clean up the temporary audio file
+      return transcript;
+    } catch (error) {
+      console.error('Error processing MP4:', error);
+      throw error;
+    }
+  }
+
+  private async extractAudioFromMP4(file: Express.Multer.File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const outputFile = path.join(__dirname, `temp_${uuidv4()}.mp3`);
+      console.log('Output file path:', outputFile);
+      console.log('FFmpeg path:', this.ffmpegPath);
+
+      const inputFile = path.join(__dirname, `temp_input_${uuidv4()}.mp4`);
+      fs.writeFileSync(inputFile, file.buffer);
+
+      const command = `"${this.ffmpegPath}" -i "${inputFile}" -vn -acodec libmp3lame -f mp3 "${outputFile}"`;
+      console.log('Executing command:', command);
+
+      exec(command, (error, stdout, stderr) => {
+        fs.unlinkSync(inputFile); // Clean up the temporary input file
+
+        if (error) {
+          console.error('FFmpeg stderr:', stderr);
+          console.error('FFmpeg error:', error);
+          reject(error);
+        } else {
+          console.log('FFmpeg process completed');
+          resolve(outputFile);
+        }
+      });
+    });
+  }
+
+  private async transcribeAudio(audioFilePath: string): Promise<string> {
+    const audioFile = fs.createReadStream(audioFilePath);
+    const response = await this.openai.audio.transcriptions.create({
+      file: audioFile,
+      model: "whisper-1",
+    });
+    return response.text;
+  }
+
+  setFFmpegPath(path: string) {
+    this.ffmpegPath = path;
+  }
+}
+
+// Add this new function to process PDF files
+async function processPDF(file: Express.Multer.File): Promise<string> {
+  try {
+    console.log('Processing PDF file:', file.originalname);
+    console.log('File buffer length:', file.buffer.length);
+    
+    const dataBuffer = file.buffer;
+    const data = await pdf(dataBuffer, {
+      max: 0, // No page limit
+      version: 'default'
+    });
+    
+    console.log('PDF processed successfully. Extracted text length:', data.text.length);
+    return data.text;
+  } catch (error: any) {
+    console.error('Error processing PDF:', error);
+    throw new Error(`Failed to process PDF file: ${error.message}`);
+  }
+}
+
+// Add this new function to scrape content from a URL
+async function scrapeUrl(url: string): Promise<string> {
+  try {
+    console.log('Launching Puppeteer...');
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    const page = await browser.newPage();
+
+    console.log(`Navigating to URL: ${url}`);
+    await page.goto(url, { waitUntil: 'networkidle2' });
+
+    console.log('Extracting text content from the page...');
+    const text = await page.evaluate(() => document.body.innerText);
+
+    console.log('Closing browser...');
+    await browser.close();
+
+    return text;
+  } catch (error) {
+    console.error('Error scraping URL:', error);
+    throw new Error('Failed to scrape content from the provided URL');
+  }
+}
+
 app.post('/extract-text', upload.single('file'), async (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
   try {
+    console.log('Received file:', req.file.originalname);
+    console.log('File mimetype:', req.file.mimetype);
+    console.log('File size:', req.file.size);
+
     const worker = await createWorker('eng');
     const { data: { text } } = await worker.recognize(req.file.buffer);
     await worker.terminate();
 
+    console.log('Extracted text:', text);
     res.json({ extractedText: text });
   } catch (error) {
     console.error('Error extracting text:', error);
@@ -299,14 +419,63 @@ app.post('/process-file', upload.single('file'), async (req: Request, res: Respo
   let extractedText = '';
 
   try {
+    console.log('Received file:', req.file ? req.file.originalname : 'No file');
+    console.log('Upload type:', uploadType);
+
+    if (req.file) {
+      console.log('File mimetype:', req.file.mimetype);
+      console.log('File size:', req.file.size);
+    }
+
     switch (uploadType) {
+      case 'png':
+        if (!req.file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+        }
+        console.log('Processing PNG file...');
+        try {
+          const worker = await createWorker('eng');
+          const { data: { text } } = await worker.recognize(req.file.buffer);
+          await worker.terminate();
+          extractedText = text;
+          console.log('Extracted text from PNG:', extractedText);
+        } catch (ocrError: any) {
+          console.error('OCR processing error:', ocrError);
+          return res.status(400).json({ error: `OCR processing failed: ${ocrError.message}` });
+        }
+        break;
       case 'file':
+        if (!req.file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+        }
+        console.log('File mimetype:', req.file.mimetype);
+        if (req.file.mimetype === 'application/pdf') {
+          try {
+            extractedText = await processPDF(req.file);
+          } catch (pdfError: any) {
+            console.error('PDF processing error:', pdfError);
+            return res.status(400).json({ error: `PDF processing failed: ${pdfError.message}` });
+          }
+        } else if (req.file.mimetype === 'text/plain') {
+          extractedText = req.file.buffer.toString('utf-8');
+        } else {
+          return res.status(400).json({ error: 'Unsupported file type. Please upload a PDF or text file.' });
+        }
+        break;
       case 'mp4':
         if (!req.file) {
           return res.status(400).json({ error: 'No file uploaded' });
         }
-        // Process file or MP4 (not implemented yet)
-        extractedText = `${uploadType} processing not implemented yet`;
+        const ffmpegPath = process.env.FFMPEG_PATH || 'C:\\ffmpeg\\ffmpeg.exe';
+        console.log('FFmpeg path in route:', ffmpegPath);
+        const mp4Processor = new MP4Processor(openaiApiKey);
+        mp4Processor.setFFmpegPath(ffmpegPath);
+        try {
+          extractedText = await mp4Processor.processMP4(req.file);
+        } catch (error: any) {
+          console.error('Error in MP4 processing:', error);
+          return res.status(400).json({ error: error.message, details: error.stack });
+        }
         break;
       case 'youtube':
         if (!req.body.url) {
@@ -323,6 +492,17 @@ app.post('/process-file', upload.single('file'), async (req: Request, res: Respo
           return res.status(400).json({ error: error.message });
         }
         break;
+      case 'url':
+        if (!req.body.url) {
+          return res.status(400).json({ error: 'URL is required' });
+        }
+        try {
+          extractedText = await scrapeUrl(req.body.url);
+        } catch (error: any) {
+          console.error('Error in URL scraping:', error);
+          return res.status(400).json({ error: error.message });
+        }
+        break;
       default:
         return res.status(400).json({ error: 'Invalid upload type' });
     }
@@ -331,6 +511,7 @@ app.post('/process-file', upload.single('file'), async (req: Request, res: Respo
       return res.status(400).json({ error: 'Failed to extract text from the provided source' });
     }
 
+    console.log('Generating questions from extracted text...');
     // Generate questions using the summarizeText function
     const generatedQuestions = await summarizeText(
       extractedText,
@@ -338,11 +519,12 @@ app.post('/process-file', upload.single('file'), async (req: Request, res: Respo
       req.body.difficulty,
       req.body.questionType
     );
+    console.log('Generated questions:', generatedQuestions);
 
     res.json({ extractedText: generatedQuestions });
   } catch (error: any) {
     console.error('Error processing file:', error);
-    res.status(500).json({ error: 'Failed to process file', details: error.message });
+    res.status(500).json({ error: 'Failed to process file', details: error.message, stack: error.stack });
   }
 });
 

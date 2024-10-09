@@ -2,14 +2,14 @@
 
 import UploadPage from "./upload";
 import Footer from "../../sections/Footer";
-import { Header } from "@/app/sections/Header";
+import { SecondHeader } from "@/app/sections/SecondHeader";
 
 
 
 export default function Upload() {
   return (
     <>
-      <Header />
+      <SecondHeader />
       <UploadPage/>
       <Footer />
     </>

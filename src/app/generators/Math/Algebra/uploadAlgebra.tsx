@@ -13,8 +13,9 @@ import Tesseract from 'tesseract.js';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import toast, { Toaster } from 'react-hot-toast'; // Add this import
 import styles from './UploadPage.css'; // Make sure this CSS file exists
+import { useTheme } from '../../../contexts/ThemeContext'; // Add this import
 
-type UploadType = 'url' | 'file' | 'mp4' | 'youtube' | 'png';
+type UploadType = 'png' | 'file' | 'mp4' | 'youtube' | 'url';
 
 interface Notecard {
   objective: string;
@@ -25,7 +26,7 @@ interface Notecard {
 
 const Card = ({ objective, explanation, isFlipped, onClick }: { objective: string; explanation: string; isFlipped: boolean; onClick: () => void }) => (
   <div
-    className={`card w-80 h-96 bg-blue-200 rounded-lg shadow-lg text-gray-800 cursor-pointer transition-transform duration-500 transform ${isFlipped ? 'rotate-y-180' : ''}`}
+    className={`card w-full max-w-2xl h-120 bg-blue-200 rounded-lg shadow-lg text-gray-800 cursor-pointer transition-transform duration-500 transform ${isFlipped ? 'rotate-y-180' : ''}`}
     onClick={onClick}
     style={{
       perspective: '1000px',
@@ -34,17 +35,17 @@ const Card = ({ objective, explanation, isFlipped, onClick }: { objective: strin
   >
     {/* Front Side (Question) */}
     <div className={`backface-hidden transition-opacity duration-500 ${isFlipped ? 'opacity-0' : 'opacity-100'}`}>
-      <div className="text-center px-4">
-        <h2 className="text-xl font-bold mb-4">Question</h2>
-        <p className="text-lg">{objective}</p>
+      <div className="text-center px-8 py-10">
+        <h2 className="text-3xl font-bold mb-8">Question</h2>
+        <p className="text-2xl">{objective}</p>
       </div>
     </div>
     
     {/* Back Side (Answer) */}
     <div className={`backface-hidden rotate-y-180 transition-opacity duration-500 ${isFlipped ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="text-center px-4">
-        <h2 className="text-xl font-bold mb-4">Answer</h2>
-        <p className="text-lg">{explanation}</p>
+      <div className="text-center px-8 py-10">
+        <h2 className="text-3xl font-bold mb-8">Answer</h2>
+        <p className="text-2xl">{explanation}</p>
       </div>
     </div>
   </div>
@@ -113,17 +114,17 @@ const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-2xl font-bold text-center mb-4">Flashcards</h2>
-      <div className="flex items-center justify-center w-full">
+    <div className="flex flex-col items-center w-full max-w-4xl mx-auto px-4">
+      <h2 className="text-3xl font-bold text-center mb-8">Flashcards</h2>
+      <div className="w-full flex items-center justify-center space-x-4">
         <button
           onClick={goToPreviousCard}
           disabled={currentCardIndex === 0}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           Previous
         </button>
-        <div className="mx-4">
+        <div className="w-full max-w-2xl aspect-[3/2] flex items-center justify-center">
           <Card
             objective={notecards[currentCardIndex].objective}
             explanation={notecards[currentCardIndex].explanation}
@@ -134,12 +135,12 @@ const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
         <button
           onClick={goToNextCard}
           disabled={currentCardIndex === notecards.length - 1}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           Next
         </button>
       </div>
-      <p className="mt-4">
+      <p className="mt-6 text-xl">
         Question {currentCardIndex + 1} of {notecards.length}
       </p>
     </div>
@@ -189,12 +190,12 @@ const MultipleChoiceView = ({ notecards }: { notecards: Notecard[] }) => {
                       showResults
                         ? selectedAnswers[questionIndex] === choice
                           ? choice === question.correctAnswer
-                            ? 'bg-green-200'
-                            : 'bg-red-200'
+                            ? 'bg-green-200 dark:bg-green-700'
+                            : 'bg-red-200 dark:bg-red-700'
                           : choice === question.correctAnswer
-                            ? 'bg-green-200'
+                            ? 'bg-green-200 dark:bg-green-700'
                             : ''
-                        : 'hover:bg-gray-100'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}>
                       <input
                         type="radio"
@@ -220,7 +221,7 @@ const MultipleChoiceView = ({ notecards }: { notecards: Notecard[] }) => {
         <button
           onClick={checkAnswers}
           disabled={showResults}
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition dark:bg-blue-600 dark:hover:bg-blue-700"
         >
           Check Answers
         </button>
@@ -320,7 +321,7 @@ const EssayView = ({ notecards }: { notecards: Notecard[] }) => {
 };
 
 const UploadAlgebra: React.FC = () => {
-  const [uploadType, setUploadType] = useState<UploadType>('url');
+  const [uploadType, setUploadType] = useState<UploadType>('png');
   const [input, setInput] = useState<string>('');
   const [file, setFile] = useState<File | null>(null);
   const [notecards, setNotecards] = useState<Notecard[]>([]);
@@ -333,7 +334,15 @@ const UploadAlgebra: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([]);
   const [extractedText, setExtractedText] = useState<string>('');
   const [showResults, setShowResults] = useState<boolean>(false);
+  const [customQuestionCount, setCustomQuestionCount] = useState<string>('');
+  const { isDarkMode } = useTheme();
   const router = useRouter();
+
+  const demoNotecards: Notecard[] = [
+    { objective: "What is 2 + 2?", explanation: "The answer is 4." },
+    { objective: "Solve for x: 3x + 5 = 14", explanation: "x = 3" },
+    { objective: "What is the square root of 16?", explanation: "The square root of 16 is 4." },
+  ];
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -373,8 +382,10 @@ const UploadAlgebra: React.FC = () => {
             },
           });
           setExtractedText(response.data.extractedText);
+          console.log('Extracted text:', response.data.extractedText);
         } catch (error) {
-          setError('Error processing image: ' + error);
+          console.error('Error processing image:', error);
+          setError('Error processing image: ' + (error as Error).message);
         } finally {
           setIsLoading(false);
         }
@@ -383,7 +394,24 @@ const UploadAlgebra: React.FC = () => {
   };
 
   const handleQuestionCountChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    setQuestionCount(parseInt(event.target.value));
+    const value = event.target.value;
+    if (value === 'custom') {
+      setQuestionCount(0);
+      setCustomQuestionCount('');
+    } else {
+      setQuestionCount(parseInt(value));
+      setCustomQuestionCount('');
+    }
+  };
+
+  const handleCustomQuestionCountChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setCustomQuestionCount(value);
+    if (value) {
+      setQuestionCount(parseInt(value));
+    } else {
+      setQuestionCount(0);
+    }
   };
 
   const handleDifficultyChange = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -462,9 +490,10 @@ const UploadAlgebra: React.FC = () => {
     try {
       let textToProcess = '';
       if (uploadType === 'url') {
-        const response = await axios.post<{ summarizedText: string }>(
-          'http://localhost:3001/scrape', 
+        const response = await axios.post<{ extractedText: string }>(
+          'http://localhost:3001/process-file',
           { 
+            uploadType: 'url',
             url: input,
             email: user.email,
             questionCount,
@@ -472,9 +501,31 @@ const UploadAlgebra: React.FC = () => {
             questionType: selectedQuestionType
           }
         );
-        textToProcess = response.data.summarizedText;
+        textToProcess = response.data.extractedText;
       } else if (uploadType === 'png') {
-        textToProcess = extractedText;
+        console.log('Processing PNG file...');
+        const formData = new FormData();
+        if (file) {
+          formData.append('file', file);
+        }
+        formData.append('uploadType', uploadType);
+        formData.append('email', user.email);
+        formData.append('questionCount', questionCount.toString());
+        formData.append('difficulty', difficulty);
+        formData.append('questionType', selectedQuestionType);
+
+        console.log('Sending request with formData:', Object.fromEntries(formData));
+
+        const response = await axios.post<{ extractedText: string }>(
+          'http://localhost:3001/process-file',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+        textToProcess = response.data.extractedText;
       } else if (uploadType === 'file' || uploadType === 'mp4' || uploadType === 'youtube') {
         const formData = new FormData();
         if (file) {
@@ -508,20 +559,10 @@ const UploadAlgebra: React.FC = () => {
         }
       }
 
-      if (textToProcess) {
-        const response = await axios.post<{ generatedQuestions: string }>(
-          'http://localhost:3001/generate-questions',
-          {
-            text: textToProcess,
-            questionCount,
-            difficulty,
-            questionType: selectedQuestionType
-          }
-        );
+      console.log('Received text to process:', textToProcess);
 
-        const generatedQuestions = response.data.generatedQuestions;
-        console.log('Generated questions:', generatedQuestions);
-        const cards = parseNotecards(generatedQuestions);
+      if (textToProcess) {
+        const cards = parseNotecards(textToProcess);
         console.log('Parsed notecards:', cards);
         if (cards.length > 0) {
           setNotecards(cards);
@@ -560,7 +601,7 @@ const UploadAlgebra: React.FC = () => {
             value={input}
             onChange={handleInputChange}
             placeholder="Enter a URL"
-            className="w-full border border-gray-300 p-2 rounded"
+            className={`w-full border p-2 rounded ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'}`}
           />
         );
       case 'file':
@@ -571,18 +612,22 @@ const UploadAlgebra: React.FC = () => {
             <input
               type="file"
               onChange={handleFileChange}
-              accept={uploadType === 'file' ? ".pdf,.docx,.txt" : uploadType === 'mp4' ? ".mp4" : ".png"}
+              accept={uploadType === 'file' ? ".pdf,.txt" : uploadType === 'mp4' ? ".mp4" : ".png"}
               className="hidden"
               id="file-upload"
             />
             <label
               htmlFor="file-upload"
-              className="cursor-pointer bg-white border border-gray-300 rounded py-2 px-4 inline-flex items-center w-full"
+              className={`cursor-pointer border rounded py-2 px-4 inline-flex items-center w-full ${
+                isDarkMode 
+                  ? 'bg-gray-700 text-white border-gray-600' 
+                  : 'bg-white text-gray-700 border-gray-300'
+              }`}
             >
               <span className="mr-2">
                 {uploadType === 'file' ? <File size={18} /> : uploadType === 'mp4' ? <Video size={18} /> : <Image size={18} />}
               </span>
-              <span className="text-gray-700">
+              <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
                 {file ? file.name : `Choose ${uploadType.toUpperCase()} file`}
               </span>
             </label>
@@ -595,7 +640,7 @@ const UploadAlgebra: React.FC = () => {
             value={input}
             onChange={handleInputChange}
             placeholder="Enter YouTube video URL"
-            className="w-full border border-gray-300 p-2 rounded"
+            className={`w-full border p-2 rounded ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'}`}
           />
         );
     }
@@ -619,65 +664,114 @@ const UploadAlgebra: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <Toaster position="top-center" reverseOrder={false} /> {/* Add this line */}
-      <div className="w-full max-w-4xl p-8 rounded-lg shadow-xl">
-        <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Generate Algebra Questions!</h1>
+    <div className={`min-h-screen flex flex-col items-center justify-center p-4 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+      <Toaster position="top-center" reverseOrder={false} />
+      <div className={`w-full max-w-4xl p-8 rounded-lg shadow-xl ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
+        <h1 className={`text-2xl font-bold text-center mb-4 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Generate Algebra Questions!</h1>
         {!showResults ? (
           <>
-            <p className="text-center text-gray-600 mb-6">Choose an input method to generate algebra questions.</p>
+            <p className={`text-center mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Choose an input method to generate algebra questions.</p>
             <div className="flex justify-center mb-4 flex-wrap">
               <button
-                onClick={() => handleUploadTypeChange('url')}
-                className={`m-1 px-4 py-2 rounded flex items-center ${uploadType === 'url' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                onClick={() => handleUploadTypeChange('png')}
+                className={`m-1 px-4 py-2 rounded flex items-center ${
+                  uploadType === 'png' 
+                    ? 'bg-blue-500 text-white' 
+                    : isDarkMode 
+                      ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
               >
-                <Link className="mr-2" size={18} />
-                URL
-              </button>
-              <button
-                onClick={() => handleUploadTypeChange('file')}
-                className={`m-1 px-4 py-2 rounded flex items-center ${uploadType === 'file' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-              >
-                <File className="mr-2" size={18} />
-                File
+                <Image className="mr-2" size={18} />
+                PNG
               </button>
               <button
                 onClick={() => handleUploadTypeChange('mp4')}
-                className={`m-1 px-4 py-2 rounded flex items-center ${uploadType === 'mp4' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                className={`m-1 px-4 py-2 rounded flex items-center ${
+                  uploadType === 'mp4' 
+                    ? 'bg-blue-500 text-white' 
+                    : isDarkMode 
+                      ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
               >
                 <Video className="mr-2" size={18} />
                 MP4
               </button>
               <button
                 onClick={() => handleUploadTypeChange('youtube')}
-                className={`m-1 px-4 py-2 rounded flex items-center ${uploadType === 'youtube' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                className={`m-1 px-4 py-2 rounded flex items-center ${
+                  uploadType === 'youtube' 
+                    ? 'bg-blue-500 text-white' 
+                    : isDarkMode 
+                      ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
               >
                 <Youtube className="mr-2" size={18} />
                 YouTube
               </button>
               <button
-                onClick={() => handleUploadTypeChange('png')}
-                className={`m-1 px-4 py-2 rounded flex items-center ${uploadType === 'png' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                onClick={() => handleUploadTypeChange('url')}
+                className={`m-1 px-4 py-2 rounded flex items-center ${
+                  uploadType === 'url' 
+                    ? 'bg-blue-500 text-white' 
+                    : isDarkMode 
+                      ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
               >
-                <Image className="mr-2" size={18} />
-                PNG
+                <Link className="mr-2" size={18} />
+                URL
+              </button>
+              <button
+                onClick={() => handleUploadTypeChange('file')}
+                className={`m-1 px-4 py-2 rounded flex items-center ${
+                  uploadType === 'file' 
+                    ? 'bg-blue-500 text-white' 
+                    : isDarkMode 
+                      ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
+              >
+                <File className="mr-2" size={18} />
+                File
               </button>
             </div>
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
               {renderInputField()}
               <div className="flex justify-between">
-                <label className="w-1/3">
+                <label className="w-1/3 flex items-center">
                   Question Count:
-                  <select value={questionCount} onChange={handleQuestionCountChange} className="ml-2 border border-gray-300 rounded">
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={15}>15</option>
-                    <option value={20}>20</option>
-                  </select>
+                  {questionCount === 0 || customQuestionCount !== '' ? (
+                    <input
+                      type="number"
+                      value={customQuestionCount}
+                      onChange={handleCustomQuestionCountChange}
+                      placeholder="Enter number"
+                      className={`ml-2 w-20 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded p-1`}
+                    />
+                  ) : (
+                    <select 
+                      value={questionCount.toString()} 
+                      onChange={handleQuestionCountChange} 
+                      className={`ml-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded p-1`}
+                    >
+                      <option value="5">5</option>
+                      <option value="10">10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                  )}
                 </label>
                 <label className="w-1/3">
                   Difficulty:
-                  <select value={difficulty} onChange={handleDifficultyChange} className="ml-2 border border-gray-300 rounded">
+                  <select 
+                    value={difficulty} 
+                    onChange={handleDifficultyChange} 
+                    className={`ml-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded p-1`}
+                  >
                     <option value="Easy">Easy</option>
                     <option value="Medium">Medium</option>
                     <option value="Hard">Hard</option>
@@ -685,7 +779,11 @@ const UploadAlgebra: React.FC = () => {
                 </label>
                 <label className="w-1/3">
                   Question Type:
-                  <select value={selectedQuestionType} onChange={handleQuestionTypeChange} className="ml-2 border border-gray-300 rounded">
+                  <select 
+                    value={selectedQuestionType} 
+                    onChange={handleQuestionTypeChange} 
+                    className={`ml-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded p-1`}
+                  >
                     <option value="true/false">True/False</option>
                     <option value="short answer">Short Answer</option>
                     <option value="multiple choice">Multiple Choice</option>
@@ -696,7 +794,7 @@ const UploadAlgebra: React.FC = () => {
               {error && <p className="text-red-500">{error}</p>}
               <button
                 type="submit"
-                className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition"
+                className={`${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white py-2 rounded transition`}
                 disabled={isLoading}
               >
                 {isLoading ? 'Processing...' : 'Generate Algebra Questions'}
@@ -704,7 +802,15 @@ const UploadAlgebra: React.FC = () => {
             </form>
           </>
         ) : (
-          renderContent()
+          <>
+            {renderContent()}
+            <button
+              onClick={() => setShowResults(false)}
+              className={`mt-4 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white py-2 px-4 rounded transition`}
+            >
+              Generate New Questions
+            </button>
+          </>
         )}
         {isLoading && (
           <div className="mt-4">
@@ -714,7 +820,7 @@ const UploadAlgebra: React.FC = () => {
             </div>
             <div className="mt-4 max-h-40 overflow-y-auto">
               {logs.map((log, index) => (
-                <p key={index} className="text-sm text-gray-600">{log}</p>
+                <p key={index} className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>{log}</p>
               ))}
             </div>
           </div>
