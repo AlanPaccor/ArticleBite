@@ -9,9 +9,10 @@ import { collection, addDoc } from 'firebase/firestore';
 import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
 import { Loader, Link, File, Video, Image, Youtube } from 'lucide-react';
 import OpenAI from 'openai';
-import styles from './UploadPage.css'; // Make sure this CSS file exists
 import Tesseract from 'tesseract.js';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
+import toast, { Toaster } from 'react-hot-toast'; // Add this import
+import styles from './UploadPage.css'; // Make sure this CSS file exists
 
 type UploadType = 'url' | 'file' | 'mp4' | 'youtube' | 'png';
 
@@ -397,7 +398,7 @@ const UploadAlgebra: React.FC = () => {
       }
     }
 
-
+    console.log('Parsed notecards:', cards);  // Add this line for debugging
     return cards;
   };
 
@@ -424,7 +425,7 @@ const UploadAlgebra: React.FC = () => {
       return;
     }
     if (!input && !file) {
-      setError('Please enter a URL or upload a file.');
+      toast.error('Please enter a URL or upload a file.');
       return;
     }
     setIsLoading(true);
@@ -451,23 +452,35 @@ const UploadAlgebra: React.FC = () => {
         textToProcess = extractedText;
       } else if (uploadType === 'file' || uploadType === 'mp4' || uploadType === 'youtube') {
         const formData = new FormData();
-        formData.append('file', file as File);
+        if (file) {
+          formData.append('file', file);
+        }
         formData.append('uploadType', uploadType);
         formData.append('email', user.email);
         formData.append('questionCount', questionCount.toString());
         formData.append('difficulty', difficulty);
         formData.append('questionType', selectedQuestionType);
+        if (uploadType === 'youtube') {
+          formData.append('url', input);
+        }
 
-        const response = await axios.post<{ extractedText: string }>(
-          'http://localhost:3001/process-file',
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-        textToProcess = response.data.extractedText;
+        console.log('Sending request with formData:', Object.fromEntries(formData));
+
+        try {
+          const response = await axios.post<{ extractedText: string }>(
+            'http://localhost:3001/process-file',
+            formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            }
+          );
+          textToProcess = response.data.extractedText;
+        } catch (error: any) {
+          console.error('Error details:', error.response?.data);
+          throw error;
+        }
       }
 
       if (textToProcess) {
@@ -489,15 +502,25 @@ const UploadAlgebra: React.FC = () => {
           setNotecards(cards);
           await saveNotecardsToFirestore(cards, user.email);
           setShowResults(true);
+          toast.success(`${cards.length} questions generated successfully!`);
         } else {
-          setError('No valid notecards found in the response.');
+          toast.error('No valid notecards found in the response.');
         }
       } else {
-        setError('No text received to process.');
+        toast.error('No text received to process.');
       }
     } catch (error: any) {
       console.error('Error in handleSubmit:', error);
-      setError(`Failed to fetch or save notes: ${error.message}`);
+      let errorMessage = 'Failed to fetch or save notes';
+      if (error.response && error.response.data && error.response.data.error) {
+        errorMessage += `: ${error.response.data.error}`;
+      } else if (error.message) {
+        errorMessage += `: ${error.message}`;
+      }
+      toast.error(errorMessage);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -554,6 +577,7 @@ const UploadAlgebra: React.FC = () => {
   };
 
   const renderContent = () => {
+    console.log('Rendering content, notecards:', notecards);  // Add this line for debugging
     if (['true/false', 'short answer'].includes(selectedQuestionType)) {
       return <CarouselView notecards={notecards} />;
     } else if (selectedQuestionType === 'multiple choice') {
@@ -561,7 +585,7 @@ const UploadAlgebra: React.FC = () => {
     } else if (selectedQuestionType === 'essay') {
       return <EssayView notecards={notecards} />;
     } else {
-      return <DefaultView notecards={notecards} />;
+      return <div>Unsupported question type</div>;
     }
   };
 
@@ -571,6 +595,7 @@ const UploadAlgebra: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <Toaster position="top-center" reverseOrder={false} /> {/* Add this line */}
       <div className="w-full max-w-4xl p-8 rounded-lg shadow-xl">
         <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">Generate Algebra Questions!</h1>
         {!showResults ? (
