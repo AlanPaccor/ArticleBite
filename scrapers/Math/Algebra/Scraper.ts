@@ -111,7 +111,7 @@ async function summarizeText(text: string, questionCount: number, difficulty: st
     }
 
     console.log('Creating final summary with questions...');
-    let prompt = `Create a notecard format with exactly ${questionCount} questions from the following summary. Difficulty: ${difficulty}. Question type: ${questionType}. `;
+    let prompt = `Create a notecard format with exactly ${questionCount} questions from the following summary, and then add one extra empty question. Difficulty: ${difficulty}. Question type: ${questionType}. `;
 
     if (questionType === 'multiple choice') {
       prompt += `Use the following format for each question:
@@ -135,7 +135,11 @@ answer{n}={answer or explanation}
 Where n is the question number (1, 2, 3, etc.). Provide exactly ${questionCount} objectives and answers. Do not include curly braces in the actual content.`;
     }
 
-    prompt += `\n\nEnsure that you generate exactly ${questionCount} questions, no more and no less.\n\n${combinedSummary}`;
+    prompt += `\n\nEnsure that you generate exactly ${questionCount} questions, no more and no less. After generating these questions, add one extra question with the following format:
+objective${questionCount + 1}=empty
+answer${questionCount + 1}=empty
+
+\n\n${combinedSummary}`;
 
     let finalSummary = '';
     let attempts = 0;
@@ -164,16 +168,16 @@ Where n is the question number (1, 2, 3, etc.). Provide exactly ${questionCount}
       const questionMatches = finalSummary.match(/objective\d+=/g);
       const generatedQuestionCount = questionMatches ? questionMatches.length : 0;
 
-      if (generatedQuestionCount === questionCount) {
+      if (generatedQuestionCount === questionCount + 1) {
         break;
       } else {
-        console.log(`Generated ${generatedQuestionCount} questions instead of ${questionCount}. Retrying...`);
+        console.log(`Generated ${generatedQuestionCount} questions instead of ${questionCount + 1}. Retrying...`);
         attempts++;
       }
     }
 
     if (attempts === maxAttempts) {
-      throw new Error(`Failed to generate exactly ${questionCount} questions after ${maxAttempts} attempts. The content might be insufficient or not suitable for the requested number of questions.`);
+      throw new Error(`Failed to generate exactly ${questionCount + 1} questions after ${maxAttempts} attempts. The content might be insufficient or not suitable for the requested number of questions.`);
     }
 
     return finalSummary;

@@ -95,6 +95,7 @@ const Carousel = ({ children }: { children: React.ReactNode }) => {
 };
 
 const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
 
   const handleCardFlip = (index: number) => {
@@ -103,20 +104,44 @@ const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
     );
   };
 
+  const goToPreviousCard = () => {
+    setCurrentCardIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : prevIndex));
+  };
+
+  const goToNextCard = () => {
+    setCurrentCardIndex((prevIndex) => (prevIndex < notecards.length - 1 ? prevIndex + 1 : prevIndex));
+  };
+
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-center mb-4">Carousel View</h2>
-      <Carousel>
-        {notecards.map((card, index) => (
+    <div className="flex flex-col items-center">
+      <h2 className="text-2xl font-bold text-center mb-4">Flashcards</h2>
+      <div className="flex items-center justify-center w-full">
+        <button
+          onClick={goToPreviousCard}
+          disabled={currentCardIndex === 0}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+        >
+          Previous
+        </button>
+        <div className="mx-4">
           <Card
-            key={index}
-            objective={card.objective}
-            explanation={card.explanation}
-            isFlipped={flippedCards.includes(index)}
-            onClick={() => handleCardFlip(index)}
+            objective={notecards[currentCardIndex].objective}
+            explanation={notecards[currentCardIndex].explanation}
+            isFlipped={flippedCards.includes(currentCardIndex)}
+            onClick={() => handleCardFlip(currentCardIndex)}
           />
-        ))}
-      </Carousel>
+        </div>
+        <button
+          onClick={goToNextCard}
+          disabled={currentCardIndex === notecards.length - 1}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+        >
+          Next
+        </button>
+      </div>
+      <p className="mt-4">
+        Question {currentCardIndex + 1} of {notecards.length}
+      </p>
     </div>
   );
 };
