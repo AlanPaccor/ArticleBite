@@ -1,16 +1,16 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Moon, SearchIcon, Sun, UserIcon, Star } from 'lucide-react';
+import { Moon, SearchIcon, Sun, UserIcon, Star, Menu } from 'lucide-react';
 import Image from 'next/image';
 import logo from '../assets/logosaas.png';
-import { auth, db } from '../lib/firebase-config'; // Ensure db is imported here
+import { auth, db } from '../lib/firebase-config';
 import { User } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore'; // Firestore functions
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import Account from './selections/Account';
 import History from './selections/History';
 import Modal from '../components/Modal';
-import ArticlePic from '../assets/ArticlePic.jpg';  // Add this import at the top of the file
-import AlgebraPic from '../assets/Algebra.jpg';  // Add this import at the top of the file
+import ArticlePic from '../assets/ArticlePic.jpg';
+import AlgebraPic from '../assets/Algebra.jpg';
 import Favorites from './selections/Favorites';
 
 const UserDashboard: React.FC = () => {
@@ -26,7 +26,8 @@ const UserDashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [fullName, setFullName] = useState<string | null>(null); // Keep this for full name
+  const [fullName, setFullName] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -114,14 +115,14 @@ const UserDashboard: React.FC = () => {
         ];
 
         return (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {gridItems.map((item) => (
               <a
                 key={item.id}
                 href={item.href}
                 className={`${
                   isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
-                } rounded-lg p-4 h-80 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group`}
+                } rounded-lg p-4 h-60 sm:h-80 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group`}
                 style={{
                   backgroundImage: `url(${item.image.src})`,
                   backgroundSize: 'cover',
@@ -165,7 +166,7 @@ const UserDashboard: React.FC = () => {
                 key={`placeholder-${index}`}
                 className={`${
                   isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
-                } rounded-lg p-4 h-80`}
+                } rounded-lg p-4 h-60 sm:h-80`}
               ></div>
             ))}
           </div>
@@ -191,12 +192,27 @@ const UserDashboard: React.FC = () => {
 
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+      {/* Mobile Header */}
+      <div className="sm:hidden fixed top-0 left-0 right-0 z-10 p-4 flex justify-between items-center bg-opacity-90 backdrop-blur-sm">
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+          <Menu className="w-6 h-6" />
+        </button>
+        <Image src={logo} alt='SaaS Logo' height={40} width={40} />
+        <div className="w-6 h-6"></div> {/* Placeholder for balance */}
+      </div>
+
       {/* Left Sidebar */}
-      <div className={`w-64 p-4 flex flex-col border-r ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}`}>
-        <div className="flex justify-center items-center mb-8">
+      <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} sm:relative sm:translate-x-0 transition duration-200 ease-in-out z-30 w-64 sm:w-64 p-4 flex flex-col border-r ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}>
+        <div className="flex justify-between items-center mb-8">
           <a href="/" aria-label="Homepage">
             <Image src={logo} alt='SaaS Logo' height={40} width={40} />
           </a>
+          <button 
+            className="sm:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            Close
+          </button>
         </div>
 
         <div className="flex flex-col items-center mb-8">
@@ -226,7 +242,10 @@ const UserDashboard: React.FC = () => {
                   ? isDarkMode ? 'bg-gray-800' : 'bg-gray-200' 
                   : isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-200'
               } ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-              onClick={() => setActiveSection(section)}
+              onClick={() => {
+                setActiveSection(section);
+                setIsSidebarOpen(false);
+              }}
             >
               {section}
             </button>
@@ -254,19 +273,19 @@ const UserDashboard: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8 overflow-hidden">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">{activeSection}</h1>
-          <div className="flex items-center">
-            <div className="relative mr-4">
+      <div className="flex-1 p-4 sm:p-8 overflow-y-auto mt-16 sm:mt-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+          <h1 className="text-2xl font-bold mb-4 sm:mb-0">{activeSection}</h1>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center w-full sm:w-auto">
+            <div className="relative mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
               <input
                 type="text"
                 placeholder="Search something..."
-                className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-900'} rounded-full py-2 px-4 pr-10 focus:outline-none`}
+                className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-900'} rounded-full py-2 px-4 pr-10 focus:outline-none w-full`}
               />
               <SearchIcon className={`absolute right-3 top-2.5 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} w-5 h-5`} />
             </div>
-            <a className="bg-yellow-400 text-gray-900 rounded-full px-4 py-2 font-medium mr-4" href='memberships'>
+            <a className="bg-yellow-400 text-gray-900 rounded-full px-4 py-2 font-medium w-full sm:w-auto text-center" href='memberships'>
               Upgrade
             </a>
           </div>
