@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth } from '../lib/firebase-config';
 import { updateProfile } from 'firebase/auth';
+import Image from 'next/image';
 
 interface ModalProps {
   isOpen: boolean;
@@ -114,10 +115,12 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, onProfileUpdate }) => {
           {selectedImage ? (
             <div>
               <p className="text-black">Selected Image: {selectedImage.name}</p>
-              <img
+              <Image
                 src={URL.createObjectURL(selectedImage)}
                 alt="Selected"
-                className="mt-2 w-32 h-32 object-cover rounded-full"
+                width={500}
+                height={300}
+                layout="responsive"
               />
             </div>
           ) : (
