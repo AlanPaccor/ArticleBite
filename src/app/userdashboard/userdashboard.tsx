@@ -26,7 +26,6 @@ const UserDashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [fullName, setFullName] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -73,113 +72,114 @@ const UserDashboard: React.FC = () => {
     }
   };
 
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'History':
-        return <History isDarkMode={isDarkMode} />;
-      case 'Favorites':
-        return <Favorites isDarkMode={isDarkMode} favorites={favorites} />;
-      case 'Settings':
-        return <Account isDarkMode={isDarkMode} />;
-      default:
-        const gridItems = [
-          {
-            id: 'article',
-            title: 'Scrape Article',
-            href: '/generators/ArticleGen',
-            image: ArticlePic,
-            icon: (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            )
-          },
-          {
-            id: 'algebra',
-            title: 'Algebra',
-            href: '/generators/Math/Algebra',
-            image: AlgebraPic,
-            icon: (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-              />
-            )
-          },
-          // Add more items here as needed
-        ];
+  let component;
+  switch (activeSection) {
+    case 'History':
+      component = <History isDarkMode={isDarkMode} />;
+      break;
+    case 'Favorites':
+      component = <Favorites isDarkMode={isDarkMode} favorites={favorites} />;
+      break;
+    case 'Settings':
+      component = <Account isDarkMode={isDarkMode} />;
+      break;
+    default:
+      const gridItems = [
+        {
+          id: 'article',
+          title: 'Scrape Article',
+          href: '/generators/ArticleGen',
+          image: ArticlePic,
+          icon: (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          )
+        },
+        {
+          id: 'algebra',
+          title: 'Algebra',
+          href: '/generators/Math/Algebra',
+          image: AlgebraPic,
+          icon: (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+            />
+          )
+        },
+        // Add more items here as needed
+      ];
 
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {gridItems.map((item) => (
-              <a
-                key={item.id}
-                href={item.href}
-                className={`${
-                  isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
-                } rounded-lg p-4 h-80 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group`}
-                style={{
-                  backgroundImage: `url(${item.image.src})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                <div className="absolute inset-0 bg-black opacity-70 group-hover:opacity-30 transition-opacity duration-300"></div>
-                <div className="relative z-10 flex flex-col items-center">
-                  <svg
-                    className={`w-12 h-12 mb-2 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    {item.icon}
-                  </svg>
-                  <span className="text-center text-white font-semibold">{item.title}</span>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleFavorite(item.id);
-                  }}
-                  className="absolute bottom-2 right-2 z-20"
+      component = (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {gridItems.map((item) => (
+            <a
+              key={item.id}
+              href={item.href}
+              className={`${
+                isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
+              } rounded-lg p-4 h-80 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group`}
+              style={{
+                backgroundImage: `url(${item.image.src})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            >
+              <div className="absolute inset-0 bg-black opacity-70 group-hover:opacity-30 transition-opacity duration-300"></div>
+              <div className="relative z-10 flex flex-col items-center">
+                <svg
+                  className={`w-12 h-12 mb-2 ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <Star
-                    className={`w-6 h-6 ${
-                      favorites.includes(item.id)
-                        ? 'text-yellow-400 fill-current'
-                        : 'text-white'
-                    }`}
-                  />
-                </button>
-              </a>
-            ))}
+                  {item.icon}
+                </svg>
+                <span className="text-center text-white font-semibold">{item.title}</span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleFavorite(item.id);
+                }}
+                className="absolute bottom-2 right-2 z-20"
+              >
+                <Star
+                  className={`w-6 h-6 ${
+                    favorites.includes(item.id)
+                      ? 'text-yellow-400 fill-current'
+                      : 'text-white'
+                  }`}
+                />
+              </button>
+            </a>
+          ))}
 
-            {/* Remaining placeholder boxes */}
-            {[...Array(Math.max(0, 6 - gridItems.length))].map((_, index) => (
-              <div
-                key={`placeholder-${index}`}
-                className={`${
-                  isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
-                } rounded-lg p-4 h-80`}
-              ></div>
-            ))}
-          </div>
-        );
-    }
-  };
+          {/* Remaining placeholder boxes */}
+          {[...Array(Math.max(0, 6 - gridItems.length))].map((_, index) => (
+            <div
+              key={`placeholder-${index}`}
+              className={`${
+                isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
+              } rounded-lg p-4 h-80`}
+            ></div>
+          ))}
+        </div>
+      );
+  }
 
   useEffect(() => {
     const fetchUserData = async () => {
       if (user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
-          setFullName(userDoc.data().fullName);
           setProfilePicture(user.photoURL);
           setActiveSection(userDoc.data().displayName); // Update display name
           setFavorites(userDoc.data().favorites || []); // Load favorites from Firestore
@@ -217,7 +217,13 @@ const UserDashboard: React.FC = () => {
 
         <div className="flex flex-col items-center mb-8">
           {profilePicture ? (
-            <img src={profilePicture} alt="User" className="w-20 h-20 rounded-full mb-2 object-cover" />
+            <Image 
+              src={profilePicture} 
+              alt="User" 
+              width={80} 
+              height={80} 
+              className="rounded-full mb-2 object-cover" 
+            />
           ) : (
             <div className={`w-16 h-16 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'} flex items-center justify-center mb-2`}>
               <UserIcon className={`w-8 h-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
@@ -291,7 +297,7 @@ const UserDashboard: React.FC = () => {
           </div>
         </div>
 
-        {renderContent()}
+        {component}
       </div>
 
       {/* Modal */}

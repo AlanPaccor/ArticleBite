@@ -1,6 +1,3 @@
-import Image from "next/image";
-
-
 export default function FeaturesDisplay() {
   return (
     <section className="relative before:absolute before:inset-0 before:-z-20 before:bg-gradient-to-b from-[#D2DCFF] to-white">

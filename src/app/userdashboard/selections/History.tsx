@@ -56,7 +56,7 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [auth, fetchNotecards, router]);
 
   const fetchNotecards = async (userEmail: string | null) => {
     if (!userEmail) {

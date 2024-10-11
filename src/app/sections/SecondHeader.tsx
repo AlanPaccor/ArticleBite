@@ -11,7 +11,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 export const SecondHeader = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Check if the user is logged in (only on the client)

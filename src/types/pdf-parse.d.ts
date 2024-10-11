@@ -1,4 +1,4 @@
 declare module 'pdf-parse' {
-  function parse(dataBuffer?: Buffer, options?: {}): Promise<any>;
+  function parse(_dataBuffer?: Buffer, _options?: {}): Promise<any>;
   export = parse;
 }
