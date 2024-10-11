@@ -1,95 +1,110 @@
-import React from 'react';
-import { FaCheck } from 'react-icons/fa';
+"use client";
 
-const StarRating = ({ rating, reviews }) => (
-  <div className="flex items-center">
-    {[1, 2, 3, 4, 5].map((star) => (
-      <svg key={star} className={`w-4 h-4 ${star <= Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-      </svg>
-    ))}
-    <span className="text-sm text-blue-600 ml-2">({reviews} reviews)</span>
-  </div>
-);
+import CheckIcon from '../assets/check.svg';
+import { motion } from 'framer-motion';
+import { twMerge } from "tailwind-merge";
 
-export const Membership = () => {
-  const features = [
-    "Free standard shipping*",
-    "Free 2-day shipping*",
-    "Exclusive member prices on thousands of items",
-    "Exclusive access to sales, events and products",
-    "Extended 60-day return window on most products*",
-    "Protection plans, including AppleCare+*",
-    "24/7 tech support",
-    "VIP member support",
-    "20% off repairs*"
-  ];
 
-  const tiers = [
-    {
-      title: "Basic",
-      price: "Free",
-      rating: 0,
-      reviews: 0,
-      buttonText: "Join My Best Buy",
-      includedFeatures: [0]
-    },
-    {
-      title: "Pro",
-      price: "$49.99/year*",
-      rating: 4,
-      buttonText: "Add to Cart",
-      includedFeatures: [0, 1, 2, 3, 4]
-    },
-    {
-      title: "Business",
-      price: "$179.99/year*",
-      rating: 4.5,
-      buttonText: "Add to Cart",
-      includedFeatures: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-    }
-  ];
+const pricingTiers = [
+  {
+    title: "Free",
+    monthlyPrice: 0,
+    buttonText: "Get started for free",
+    popular: false,
+    inverse: false,
+    features: [
+      "Up to 5 project members",
+      "Unlimited tasks and projects",
+      "2GB storage",
+      "Integrations",
+      "Basic support",
+    ],
+  },
+  {
+    title: "Pro",
+    monthlyPrice: 9,
+    buttonText: "Sign up now",
+    popular: true,
+    inverse: true,
+    features: [
+      "Up to 50 project members",
+      "Unlimited tasks and projects",
+      "50GB storage",
+      "Integrations",
+      "Priority support",
+      "Advanced support",
+      "Export support",
+    ],
+  },
+  {
+    title: "Business",
+    monthlyPrice: 19,
+    buttonText: "Sign up now",
+    popular: false,
+    inverse: false,
+    features: [
+      "Up to 5 project members",
+      "Unlimited tasks and projects",
+      "200GB storage",
+      "Integrations",
+      "Dedicated account manager",
+      "Custom fields",
+      "Advanced analytics",
+      "Export capabilities",
+      "API access",
+      "Advanced security features",
+    ],
+  },
+];
 
+export const MembershipPage = () => {
   return (
-    <div className=" min-h-screen"> {/* Added background color here */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-4 gap-4">
-          <div className="col-span-1"></div>
-          {tiers.map((tier, index) => (
-            <div key={index} className={`col-span-1 ${index === 2 ? '' : ''} p-4 rounded-t-lg`}>
-              <h2 className="text-xl font-bold mb-2">{tier.title}</h2>
-              {tier.rating > 0 && <StarRating rating={tier.rating} reviews={tier.reviews} />}
-              <p className="text-2xl font-bold my-4">{tier.price}</p>
-              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md mb-2">
-                {tier.buttonText}
-              </button>
-              <p className="text-xs text-gray-600 mb-4">
-                {tier.price === "Free" ? "See terms." : "Auto renews. Cancel anytime. See terms."}
-              </p>
-            </div>
-          ))}
-          
-          {features.map((feature, featureIndex) => (
-            <React.Fragment key={featureIndex}>
-              <div className="col-span-1 p-4 border-t border-gray-400 ">
-                <p>{feature}</p>
+    <section className="py-24 bg-#EAEEFE">
+      <div className="container">
+        <div className='section-heading'>
+          <h2 className="section-title">Pricing</h2>
+          <p className="section-description mt-5">Free forever. Upgrade for unlimited tasks, better security, and exclusive features.</p>
+        </div>
+        <div className='flex flex-col gap-6 items-center mt-10 lg:flex-row lg:items-end lg:justify-center'>
+          {pricingTiers.map(({title, monthlyPrice, buttonText, popular, inverse, features}) => (
+            <div className={twMerge('card', inverse === true && 'border-black text-white/60 bg-black')}>
+              <div className='flex justify-between'>
+                <h3 className={twMerge('text-lg font-bold text-black/50', inverse === true && 'text-white/60')}>{title}</h3>
+                {popular && (
+                  <div className='inline-flex text-sm px-4 py-1.5 rounded-xl border border-white/20'>
+                    <motion.span 
+                    animate={{
+                      backgroundPositionX: '-100%',
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: 'linear',
+                      repeatType: 'loop',
+                    }}
+                    className="bg-[linear-gradient(to_right,#DD7DDF,#E1CD86,#BBCB92,#71C2EF,#3BFFFF,#DD7DDF,#E1CD86,#BBCB92,#71C2EF,#3BFFFF)] [background-size:200%] text-transparent bg-clip-text font-medium">
+                      Popular
+                    </motion.span>
+                  </div>
+                )}
               </div>
-              {tiers.map((tier, tierIndex) => (
-                <div key={`${featureIndex}-${tierIndex}`} className={`col-span-1 p-4 border-t border-gray-300 ${tierIndex === 2 ? '' : ''}`}>
-                  {tier.includedFeatures.includes(featureIndex) && <FaCheck className="text-blue-600" />}
-                </div>
-              ))}
-            </React.Fragment>
-          ))}
-          
-          <div className="col-span-1 p-4 border-t border-gray-200"></div>
-          {tiers.map((_, index) => (
-            <div key={index} className={`col-span-1 p-4 border-t border-gray-200 ${index === 2 ? '' : ''}`}>
-              <a href="#" className="text-blue-600">Learn more</a>
+              <div className='flex items-baseline gap-1 mt-[30px]'>
+                <span className='text-4xl font-bold tracking-tighter'>${monthlyPrice}</span>
+                <span className='tracking-tight font-bold text-black/50'>/month</span>
+              </div>
+              <button className={twMerge('btn btn-primary w-full mt-[30px]', inverse === true && 'bg-white text-black')}>{buttonText}</button>
+              <ul className='flex flex-col gap-5 mt-8'>
+                {features.map((feature) => (
+                  <li className='text-sm flex items-center gap-4'>
+                    <CheckIcon className='h-6 w-6'/>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };

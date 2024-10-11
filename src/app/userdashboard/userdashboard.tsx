@@ -115,14 +115,14 @@ const UserDashboard: React.FC = () => {
         ];
 
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {gridItems.map((item) => (
               <a
                 key={item.id}
                 href={item.href}
                 className={`${
                   isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
-                } rounded-lg p-4 h-60 sm:h-80 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group`}
+                } rounded-lg p-4 h-80 flex flex-col items-center justify-center transition-all duration-300 relative overflow-hidden group`}
                 style={{
                   backgroundImage: `url(${item.image.src})`,
                   backgroundSize: 'cover',
@@ -166,7 +166,7 @@ const UserDashboard: React.FC = () => {
                 key={`placeholder-${index}`}
                 className={`${
                   isDarkMode ? 'bg-gray-800' : 'bg-gray-200'
-                } rounded-lg p-4 h-60 sm:h-80`}
+                } rounded-lg p-4 h-80`}
               ></div>
             ))}
           </div>
@@ -193,7 +193,7 @@ const UserDashboard: React.FC = () => {
   return (
     <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
       {/* Mobile Header */}
-      <div className="sm:hidden fixed top-0 left-0 right-0 z-10 p-4 flex justify-between items-center bg-opacity-90 backdrop-blur-sm">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-10 p-4 flex justify-between items-center bg-opacity-90 backdrop-blur-sm">
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           <Menu className="w-6 h-6" />
         </button>
@@ -202,13 +202,13 @@ const UserDashboard: React.FC = () => {
       </div>
 
       {/* Left Sidebar */}
-      <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} sm:relative sm:translate-x-0 transition duration-200 ease-in-out z-30 w-64 sm:w-64 p-4 flex flex-col border-r ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}>
+      <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:relative lg:translate-x-0 transition duration-200 ease-in-out z-30 w-64 p-4 flex flex-col border-r ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}>
         <div className="flex justify-between items-center mb-8">
           <a href="/" aria-label="Homepage">
             <Image src={logo} alt='SaaS Logo' height={40} width={40} />
           </a>
           <button 
-            className="sm:hidden"
+            className="lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
           >
             Close
@@ -273,9 +273,9 @@ const UserDashboard: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-4 sm:p-8 overflow-y-auto mt-16 sm:mt-0">
+      <div className="flex-1 p-4 lg:p-8 overflow-y-auto mt-16 lg:mt-0">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-          <h1 className="text-2xl font-bold mb-4 sm:mb-0">{activeSection}</h1>
+          <h1 className="text-2xl font-bold mb-4 sm:mb-0 hidden lg:block">{activeSection}</h1>
           <div className="flex flex-col sm:flex-row items-start sm:items-center w-full sm:w-auto">
             <div className="relative mb-4 sm:mb-0 sm:mr-4 w-full sm:w-auto">
               <input
