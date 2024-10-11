@@ -125,7 +125,7 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
 
   return (
     <>
-      <style jsx global>{scrollbarStyles}</style>
+      <style>{scrollbarStyles}</style>
       <div 
         className={`h-full overflow-hidden ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}
         style={{
