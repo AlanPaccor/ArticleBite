@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer';
-import express, { Request, Response } from 'express';
+import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import axios from 'axios';
@@ -147,7 +147,7 @@ answer${questionCount + 1}=empty
 }
 
 // Scrape and summarize content from the provided URL
-app.post('/scrape', async (req: Request, res: Response) => {
+app.post('/scrape', async (req: express.Request, res: express.Response) => {
   const { url, email, questionCount = 5, difficulty = 'Medium', questionType = 'multiple choice' } = req.body;
 
   if (!url || !email) {
