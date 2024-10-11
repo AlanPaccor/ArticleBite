@@ -1,13 +1,11 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: ["@svgr/webpack"]
-    });
-
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('firebase-admin');
+    }
     return config;
   },
-  // other configurations...
 };
 
-export default nextConfig;
+module.exports = nextConfig;
