@@ -219,7 +219,7 @@ const UserDashboard: React.FC = () => {
           {profilePicture ? (
             <Image 
               src={profilePicture} 
-              alt="User" 
+              alt="User Profile"
               width={80} 
               height={80} 
               className="rounded-full mb-2 object-cover" 
