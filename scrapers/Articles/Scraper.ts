@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import express, { RequestHandler } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
