@@ -518,7 +518,7 @@ const Upload: React.FC = () => {
         {notecards.length === 0 ? (
           <>
             <h1 className={`text-xl sm:text-2xl font-bold text-center mb-4 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Upload A Link To Generate Notes!</h1>
-            <p className={`text-center mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Provide a URL and we'll scrape the content to generate flashcards for you.</p>
+            <p className={`text-center mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Provide a URL and we&apos;ll scrape the content to generate flashcards for you.</p>
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
               <input
                 type="text"
