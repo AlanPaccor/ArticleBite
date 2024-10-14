@@ -6,11 +6,10 @@ import axios from 'axios';
 import { User } from 'firebase/auth';
 import { auth, db } from '../../lib/firebase-config';
 import { collection, addDoc } from 'firebase/firestore';
-import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Share2, X, Loader } from 'lucide-react';
 import OpenAI from 'openai';
-import { useTheme } from '../../contexts/ThemeContext'; // Add this import
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface Notecard {
   objective: string;
@@ -292,7 +291,15 @@ const EssayView = ({ notecards }: { notecards: Notecard[] }) => {
 const DefaultView = ({ notecards }: { notecards: Notecard[] }) => (
   <div>
     <h2>Default View</h2>
-    {/* Implement your default view here */}
+    <ul>
+      {notecards.map((card, index) => (
+        <li key={index}>
+          <strong>Question:</strong> {card.objective}
+          <br />
+          <strong>Answer:</strong> {card.explanation}
+        </li>
+      ))}
+    </ul>
   </div>
 );
 
@@ -310,7 +317,7 @@ const Upload: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([]);
   const [showGenerateButton, setShowGenerateButton] = useState(true);
   const [customQuestionCount, setCustomQuestionCount] = useState<string>('');
-  const { isDarkMode } = useTheme(); // Add this line
+  const { isDarkMode } = useTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -389,19 +396,15 @@ const Upload: React.FC = () => {
   };
 
   const saveNotecardsToFirestore = async (notecards: Notecard[], userEmail: string) => {
-    try {
-      const notesHistoryCollection = collection(db, 'notesHistory');
-      const docData = {
-        userEmail: userEmail,
-        notecards: notecards,
-        createdAt: new Date(),
-        sourceLink: link
-      };
-      const docRef = await addDoc(notesHistoryCollection, docData);
-      return docRef;
-    } catch (error) {
-      throw error;
-    }
+    const notesHistoryCollection = collection(db, 'notesHistory');
+    const docData = {
+      userEmail: userEmail,
+      notecards: notecards,
+      createdAt: new Date(),
+      sourceLink: link
+    };
+    const docRef = await addDoc(notesHistoryCollection, docData);
+    return docRef;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
