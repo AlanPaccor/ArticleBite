@@ -1,4 +1,4 @@
-declare module 'pdf-parse/lib/pdf-parse.js' {
+declare module 'pdf-parse/lib/pdf-parse' {
   function pdf(dataBuffer: Buffer, options?: any): Promise<{
     numpages: number;
     numrender: number;
@@ -8,5 +8,9 @@ declare module 'pdf-parse/lib/pdf-parse.js' {
     version: string;
   }>;
 
+  export = pdf;
+}
+
+declare module 'pdf-parse' {
   export = pdf;
 }

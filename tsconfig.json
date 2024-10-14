@@ -21,7 +21,7 @@
       "@/*": ["./src/*"]
     },
     "baseUrl": ".",
-    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "typeRoots": ["./node_modules/@types", "./types", "."],
     "target": "es2018",
     "downlevelIteration": true
   },

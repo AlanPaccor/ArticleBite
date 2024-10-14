@@ -15,8 +15,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { Readable } from 'stream';
 import { execFile, exec } from 'child_process';
 import Ffmpeg from 'fluent-ffmpeg';
-import pdf from 'pdf-parse/lib/pdf-parse';
-import puppeteer from 'puppeteer';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // Construct the path to the .env file
