@@ -13,6 +13,7 @@ interface Notecard {
 }
 
 interface NotecardSet {
+  id: string;
   userEmail: string;
   notecards: Notecard[];
   createdAt: Timestamp;
@@ -56,7 +57,7 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
   
       try {
         console.log('Fetching notecards for user:', userEmail);
-        const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+        const fourteenDaysAgo = Timestamp.fromDate(new Date(Date.now() - 14 * 24 * 60 * 60 * 1000));
         const q = query(
           collection(db, 'notesHistory'),
           where('userEmail', '==', userEmail),
@@ -67,22 +68,18 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
           setError('No notecards found.');
           return;
         }
-        const sets = querySnapshot.docs.map(doc => {
-          const data = doc.data() as NotecardSet;
-          return {
-            id: doc.id,
-            ...data,
-            createdAt: data.createdAt.toDate()
-          };
-        });
+        const sets = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as NotecardSet[];
         console.log('Fetched notecards:', sets);
         
         // Filter out sets older than 14 days
-        const recentSets = sets.filter(set => set.createdAt >= fourteenDaysAgo);
+        const recentSets = sets.filter(set => set.createdAt.toDate() >= fourteenDaysAgo.toDate());
         setNotecardSets(recentSets);
 
         // Delete older sets
-        const setsToDelete = sets.filter(set => set.createdAt < fourteenDaysAgo);
+        const setsToDelete = sets.filter(set => set.createdAt.toDate() < fourteenDaysAgo.toDate());
         await deleteOldSets(setsToDelete);
 
       } catch (error) {
@@ -144,7 +141,7 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
               >
                 <div className={`p-4 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
                   <h2 className={`text-xl font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {set.createdAt.toLocaleDateString()}
+                    {set.createdAt.toDate().toLocaleDateString()}
                   </h2>
                   <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>{set.sourceLink}</p>
                 </div>
