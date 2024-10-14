@@ -3,6 +3,7 @@ import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import React from 'react';
 import dynamic from 'next/dynamic';
+import Home from "./page";
 
 const ThemeProvider = dynamic(() => import('./contexts/ThemeContext'), { ssr: false });
 
@@ -25,6 +26,7 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
       </body>
+      <Home />
     </html>
   )
 }
