@@ -7,7 +7,7 @@ import Footer from '@/app/sections/Footer';
 
 const UploadPage = dynamic(() => import('./upload'), { ssr: false });
 
-export default function ArticleGenPage() {
+const ArticleGenPage: React.FC = () => {
   return (
     <div>
       <SecondHeader />
@@ -15,4 +15,6 @@ export default function ArticleGenPage() {
       <Footer />
     </div>
   );
-}
+};
+
+export default ArticleGenPage;
