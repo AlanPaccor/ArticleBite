@@ -147,7 +147,7 @@ answer${questionCount + 1}=empty
 }
 
 // Scrape and summarize content from the provided URL
-const scrapeHandler: RequestHandler = async (req, res) => {
+const scrapeHandler: RequestHandler = async (req, res): Promise<void> => {
   const { url, email, questionCount = 5, difficulty = 'Medium', questionType = 'multiple choice' } = req.body as { 
     url: string; 
     email: string; 
@@ -158,7 +158,8 @@ const scrapeHandler: RequestHandler = async (req, res) => {
 
   if (!url || !email) {
     console.log('URL or email is missing from the request.');
-    return res.status(400).json({ error: 'URL and email are required' });
+    res.status(400).json({ error: 'URL and email are required' });
+    return;
   }
 
   try {
