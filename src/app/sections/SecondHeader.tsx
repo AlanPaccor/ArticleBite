@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import ArrowRight from '../assets/arrow-right.svg';
-import Logo from '../assets/logosaas.png';
 import Image from "next/image";
-import MenuIcon from '../assets/menu.svg';
 import { auth } from "../lib/firebase-config";
 import { useTheme } from '../contexts/ThemeContext';
+
+// Import SVG as components
+import ArrowRight from '../../components/icons/ArrowRight';
+import MenuIcon from '../../components/icons/MenuIcon';
+
+// Import logo
+import Logo from '../assets/logosaas.png';
 
 export const SecondHeader = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

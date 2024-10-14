@@ -1,12 +1,22 @@
-const puppeteer = require('puppeteer');
-
-import express, { RequestHandler } from 'express';
+import puppeteer from 'puppeteer';
+import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
+import { createServer } from 'http';
 
-dotenv.config({ path: '../.env' });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Construct the path to the .env file
+const envPath = path.resolve(__dirname, '../.env');
+console.log('Loading .env file from:', envPath);
+
+// Load the .env file
+dotenv.config({ path: envPath });
 
 const app = express();
 app.use(bodyParser.json());
@@ -148,7 +158,7 @@ answer${questionCount + 1}=empty
 }
 
 // Scrape and summarize content from the provided URL
-const scrapeHandler: RequestHandler = async (req, res): Promise<void> => {
+app.post('/scrape', async (req: express.Request, res: express.Response) => {
   const { url, email, questionCount = 5, difficulty = 'Medium', questionType = 'multiple choice' } = req.body as { 
     url: string; 
     email: string; 
@@ -188,12 +198,10 @@ const scrapeHandler: RequestHandler = async (req, res): Promise<void> => {
     console.error('Error scraping or summarizing data:', error.message);
     res.status(500).json({ error: 'Failed to scrape and summarize data' });
   }
-};
+});
 
-app.post('/scrape', scrapeHandler);
-
-// Start the server
-const PORT = process.env.PORT || 3001;
+// Replace the port assignment with the new port
+const PORT = 3005;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

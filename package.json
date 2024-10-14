@@ -54,6 +54,7 @@
     "@types/node": "^20.16.11",
     "@types/nodemailer": "^6.4.16",
     "@types/pdf-parse": "^1.1.4",
+    "@types/puppeteer": "^7.0.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^8.3.4",

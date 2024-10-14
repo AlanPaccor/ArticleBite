@@ -16,6 +16,7 @@ import { Readable } from 'stream';
 import { execFile, exec } from 'child_process';
 import Ffmpeg from 'fluent-ffmpeg';
 import pdf from 'pdf-parse/lib/pdf-parse';
+import puppeteer from 'puppeteer';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // Construct the path to the .env file
@@ -34,9 +35,6 @@ if (result.error) {
 // Log the API key (be careful with this in production!)
 
 dotenv.config({ path: '../.env' });
-
-// Add this line at the top of the file, after other imports
-const puppeteer = require('puppeteer');
 
 const app = express();
 app.use(bodyParser.json());
