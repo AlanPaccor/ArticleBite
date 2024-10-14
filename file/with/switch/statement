@@ -1,0 +1,7 @@
+switch (someValue) {
+  case 'value': {
+    let variable = 'something';
+    // ...
+    break;
+  }
+}
