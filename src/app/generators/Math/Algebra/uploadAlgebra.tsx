@@ -12,7 +12,6 @@ import OpenAI from 'openai';
 import Tesseract from 'tesseract.js';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import toast, { Toaster } from 'react-hot-toast'; // Add this import
-import styles from './UploadPage.css'; // Make sure this CSS file exists
 import { useTheme } from '../../../contexts/ThemeContext'; // Add this import
 
 type UploadType = 'png' | 'file' | 'mp4' | 'youtube' | 'url';
@@ -479,19 +478,15 @@ const UploadAlgebra: React.FC = () => {
   };
 
   const saveNotecardsToFirestore = async (notecards: Notecard[], userEmail: string) => {
-    try {
-      const notesHistoryCollection = collection(db, 'notesHistory');
-      const docData = {
-        userEmail: userEmail,
-        notecards: notecards,
-        createdAt: new Date(),
-        sourceLink: input
-      };
-      const docRef = await addDoc(notesHistoryCollection, docData);
-      return docRef;
-    } catch (error) {
-      throw error;
-    }
+    const notesHistoryCollection = collection(db, 'notesHistory');
+    const docData = {
+      userEmail: userEmail,
+      notecards: notecards,
+      createdAt: new Date(),
+      sourceLink: input
+    };
+    const docRef = await addDoc(notesHistoryCollection, docData);
+    return docRef;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {

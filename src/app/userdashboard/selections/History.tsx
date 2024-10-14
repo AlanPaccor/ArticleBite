@@ -47,6 +47,52 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
   const router = useRouter();
 
   useEffect(() => {
+    const fetchNotecards = async (userEmail: string | null) => {
+      if (!userEmail) {
+        setError('User email not found.');
+        setLoading(false);
+        return;
+      }
+  
+      try {
+        console.log('Fetching notecards for user:', userEmail);
+        const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+        const q = query(
+          collection(db, 'notesHistory'),
+          where('userEmail', '==', userEmail),
+          orderBy('createdAt', 'desc')
+        );
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          setError('No notecards found.');
+          return;
+        }
+        const sets = querySnapshot.docs.map(doc => {
+          const data = doc.data() as NotecardSet;
+          return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt.toDate()
+          };
+        });
+        console.log('Fetched notecards:', sets);
+        
+        // Filter out sets older than 14 days
+        const recentSets = sets.filter(set => set.createdAt >= fourteenDaysAgo);
+        setNotecardSets(recentSets);
+
+        // Delete older sets
+        const setsToDelete = sets.filter(set => set.createdAt < fourteenDaysAgo);
+        await deleteOldSets(setsToDelete);
+
+      } catch (error) {
+        console.error('Error fetching notecards:', error);
+        setError(`Failed to fetch notecards: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         fetchNotecards(user.email);
@@ -56,53 +102,7 @@ export default function History({ isDarkMode }: { isDarkMode: boolean }) {
     });
 
     return () => unsubscribe();
-  }, [auth, fetchNotecards, router]);
-
-  const fetchNotecards = async (userEmail: string | null) => {
-    if (!userEmail) {
-      setError('User email not found.');
-      setLoading(false);
-      return;
-    }
-  
-    try {
-      console.log('Fetching notecards for user:', userEmail);
-      const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-      const q = query(
-        collection(db, 'notesHistory'),
-        where('userEmail', '==', userEmail),
-        orderBy('createdAt', 'desc')
-      );
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) {
-        setError('No notecards found.');
-        return;
-      }
-      const sets = querySnapshot.docs.map(doc => {
-        const data = doc.data() as NotecardSet;
-        return {
-          id: doc.id,
-          ...data,
-          createdAt: data.createdAt.toDate()
-        };
-      });
-      console.log('Fetched notecards:', sets);
-      
-      // Filter out sets older than 14 days
-      const recentSets = sets.filter(set => set.createdAt >= fourteenDaysAgo);
-      setNotecardSets(recentSets);
-
-      // Delete older sets
-      const setsToDelete = sets.filter(set => set.createdAt < fourteenDaysAgo);
-      await deleteOldSets(setsToDelete);
-
-    } catch (error) {
-      console.error('Error fetching notecards:', error);
-      setError(`Failed to fetch notecards: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [auth, router]);
 
   const deleteOldSets = async (setsToDelete: NotecardSet[]) => {
     try {
