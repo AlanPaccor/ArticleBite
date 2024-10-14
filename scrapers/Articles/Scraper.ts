@@ -147,7 +147,7 @@ answer${questionCount + 1}=empty
 }
 
 // Scrape and summarize content from the provided URL
-app.post('/scrape', async (req: express.Request, res: express.Response) => {
+app.post('/scrape', async (req: express.Request<{}, {}, { url: string; email: string; questionCount?: number; difficulty?: string; questionType?: string }>, res: express.Response) => {
   const { url, email, questionCount = 5, difficulty = 'Medium', questionType = 'multiple choice' } = req.body;
 
   if (!url || !email) {
