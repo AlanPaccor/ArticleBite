@@ -377,9 +377,10 @@ async function scrapeUrl(url: string): Promise<string> {
   }
 }
 
-app.post('/extract-text', upload.single('file'), async (req: Request, res: Response) => {
+app.post('/extract-text', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
   if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
+    res.status(400).json({ error: 'No file uploaded' });
+    return;
   }
 
   try {
@@ -399,11 +400,12 @@ app.post('/extract-text', upload.single('file'), async (req: Request, res: Respo
   }
 });
 
-app.post('/generate-questions', async (req: Request, res: Response) => {
+app.post('/generate-questions', async (req: Request, res: Response): Promise<void> => {
   const { text, questionCount, difficulty, questionType } = req.body;
 
   if (!text) {
-    return res.status(400).json({ error: 'Text is required' });
+    res.status(400).json({ error: 'Text is required' });
+    return;
   }
 
   try {
@@ -415,7 +417,7 @@ app.post('/generate-questions', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/process-file', upload.single('file'), async (req: Request, res: Response) => {
+app.post('/process-file', upload.single('file'), async (req: Request, res: Response): Promise<void> => {
   const uploadType = req.body.uploadType as string;
   let extractedText = '';
 
@@ -431,7 +433,8 @@ app.post('/process-file', upload.single('file'), async (req: Request, res: Respo
     switch (uploadType) {
       case 'png':
         if (!req.file) {
-          return res.status(400).json({ error: 'No file uploaded' });
+          res.status(400).json({ error: 'No file uploaded' });
+          return;
         }
         console.log('Processing PNG file...');
         try {
@@ -442,12 +445,14 @@ app.post('/process-file', upload.single('file'), async (req: Request, res: Respo
           console.log('Extracted text from PNG:', extractedText);
         } catch (ocrError: any) {
           console.error('OCR processing error:', ocrError);
-          return res.status(400).json({ error: `OCR processing failed: ${ocrError.message}` });
+          res.status(400).json({ error: `OCR processing failed: ${ocrError.message}` });
+          return;
         }
         break;
       case 'file':
         if (!req.file) {
-          return res.status(400).json({ error: 'No file uploaded' });
+          res.status(400).json({ error: 'No file uploaded' });
+          return;
         }
         console.log('File mimetype:', req.file.mimetype);
         if (req.file.mimetype === 'application/pdf') {
@@ -455,17 +460,20 @@ app.post('/process-file', upload.single('file'), async (req: Request, res: Respo
             extractedText = await processPDF(req.file);
           } catch (pdfError: any) {
             console.error('PDF processing error:', pdfError);
-            return res.status(400).json({ error: `PDF processing failed: ${pdfError.message}` });
+            res.status(400).json({ error: `PDF processing failed: ${pdfError.message}` });
+            return;
           }
         } else if (req.file.mimetype === 'text/plain') {
           extractedText = req.file.buffer.toString('utf-8');
         } else {
-          return res.status(400).json({ error: 'Unsupported file type. Please upload a PDF or text file.' });
+          res.status(400).json({ error: 'Unsupported file type. Please upload a PDF or text file.' });
+          return;
         }
         break;
       case 'mp4':
         if (!req.file) {
-          return res.status(400).json({ error: 'No file uploaded' });
+          res.status(400).json({ error: 'No file uploaded' });
+          return;
         }
         const ffmpegPath = process.env.FFMPEG_PATH || 'C:\\ffmpeg\\ffmpeg.exe';
         console.log('FFmpeg path in route:', ffmpegPath);
@@ -475,41 +483,49 @@ app.post('/process-file', upload.single('file'), async (req: Request, res: Respo
           extractedText = await mp4Processor.processMP4(req.file);
         } catch (error: any) {
           console.error('Error in MP4 processing:', error);
-          return res.status(400).json({ error: error.message, details: error.stack });
+          res.status(400).json({ error: error.message, details: error.stack });
+          return;
         }
         break;
       case 'youtube':
         if (!req.body.url) {
-          return res.status(400).json({ error: 'YouTube URL is required' });
+          res.status(400).json({ error: 'YouTube URL is required' });
+          return;
         }
         const ytScraper = new YTScraper(openaiApiKey);
         try {
           extractedText = await ytScraper.scrapeAndCheckContent(req.body.url);
           if (extractedText.startsWith("The video content does not match")) {
-            return res.status(400).json({ error: extractedText });
+            res.status(400).json({ error: extractedText });
+            return;
           }
         } catch (error: any) {
           console.error('Error in YouTube processing:', error);
-          return res.status(400).json({ error: error.message });
+          res.status(400).json({ error: error.message });
+          return;
         }
         break;
       case 'url':
         if (!req.body.url) {
-          return res.status(400).json({ error: 'URL is required' });
+          res.status(400).json({ error: 'URL is required' });
+          return;
         }
         try {
           extractedText = await scrapeUrl(req.body.url);
         } catch (error: any) {
           console.error('Error in URL scraping:', error);
-          return res.status(400).json({ error: error.message });
+          res.status(400).json({ error: error.message });
+          return;
         }
         break;
       default:
-        return res.status(400).json({ error: 'Invalid upload type' });
+        res.status(400).json({ error: 'Invalid upload type' });
+        return;
     }
 
     if (!extractedText || extractedText.trim().length === 0) {
-      return res.status(400).json({ error: 'Failed to extract text from the provided source' });
+      res.status(400).json({ error: 'Failed to extract text from the provided source' });
+      return;
     }
 
     console.log('Generating questions from extracted text...');
