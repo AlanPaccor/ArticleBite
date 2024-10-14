@@ -1,4 +1,5 @@
-import * as puppeteer from 'puppeteer';
+const puppeteer = require('puppeteer');
+
 import express, { RequestHandler } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
