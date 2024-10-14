@@ -17,7 +17,8 @@ interface NoteCardSet {
 }
 
 export default function SharedNoteCard() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const [noteCardSet, setNoteCardSet] = useState<NoteCardSet | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
