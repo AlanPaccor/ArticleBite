@@ -35,6 +35,8 @@ if (result.error) {
 
 dotenv.config({ path: '../.env' });
 
+// Add this line at the top of the file, after other imports
+const puppeteer = require('puppeteer');
 
 const app = express();
 app.use(bodyParser.json());
