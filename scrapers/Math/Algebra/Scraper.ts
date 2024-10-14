@@ -9,7 +9,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { YoutubeTranscript } from 'youtube-transcript';
 import OpenAI from 'openai';
-import { YTScraper } from './YTScraper';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Readable } from 'stream';
@@ -193,7 +192,8 @@ answer${questionCount + 1}=empty
   }
 }
 
-export class YTScraper {
+// Add the YTScraper class definition here
+class YTScraper {
   private openai: OpenAI;
 
   constructor(apiKey: string) {
