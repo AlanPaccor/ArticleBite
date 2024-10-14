@@ -23,7 +23,8 @@
     "baseUrl": ".",
     "typeRoots": ["./node_modules/@types", "./types", "."],
     "target": "es2018",
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "types": ["node", "puppeteer"]
   },
   "include": [
     "next-env.d.ts",
