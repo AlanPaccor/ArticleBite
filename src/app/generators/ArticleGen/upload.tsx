@@ -8,7 +8,6 @@ import { auth, db } from '../../lib/firebase-config';
 import { collection, addDoc } from 'firebase/firestore';
 import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';
 import { Share2, X, Loader } from 'lucide-react';
 import OpenAI from 'openai';
 import { useTheme } from '../../contexts/ThemeContext'; // Add this import
@@ -46,50 +45,6 @@ const Card = ({ objective, explanation, isFlipped, onClick }: { objective: strin
     </div>
   </div>
 );
-
-const Carousel = ({ children }: { children: React.ReactNode }) => {
-  const [active, setActive] = useState(0);
-  const count = React.Children.count(children);
-  const MAX_VISIBILITY = 3;
-
-  return (
-    <div className="carousel relative w-full h-96 perspective-500 transform-style-preserve-3d flex justify-center items-center">
-      {active > 0 && (
-        <button className="nav left absolute top-1/2 left-0 transform -translate-y-1/2 text-5xl text-blue-500 z-10 cursor-pointer" onClick={() => setActive(i => i - 1)}>
-          <TiChevronLeftOutline />
-        </button>
-      )}
-      {React.Children.map(children, (child, i) => (
-        <div
-          className="card-container absolute w-80 h-96 transition-all duration-300 ease-out"
-          style={{
-            '--active': i === active ? 1 : 0,
-            '--offset': (active - i) / 3,
-            '--direction': Math.sign(active - i),
-            '--abs-offset': Math.abs(active - i) / 3,
-            pointerEvents: active === i ? 'auto' : 'none',
-            opacity: Math.abs(active - i) >= MAX_VISIBILITY ? 0 : 1,
-            display: Math.abs(active - i) > MAX_VISIBILITY ? 'none' : 'block',
-            transform: `
-              rotateY(calc(var(--offset) * 50deg)) 
-              scaleY(calc(1 + var(--abs-offset) * -0.4))
-              translateZ(calc(var(--abs-offset) * -30rem))
-              translateX(calc(var(--direction) * -5rem))
-            `,
-            filter: `blur(calc(var(--abs-offset) * 1rem))`,
-          } as React.CSSProperties}
-        >
-          {child}
-        </div>
-      ))}
-      {active < count - 1 && (
-        <button className="nav right absolute top-1/2 right-0 transform -translate-y-1/2 text-5xl text-blue-500 z-10 cursor-pointer" onClick={() => setActive(i => i + 1)}>
-          <TiChevronRightOutline />
-        </button>
-      )}
-    </div>
-  );
-};
 
 const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -334,13 +289,6 @@ const EssayView = ({ notecards }: { notecards: Notecard[] }) => {
   );
 };
 
-const ComplexQuestionsView = ({ notecards }: { notecards: Notecard[] }) => (
-  <div>
-    <h2>Complex Questions View</h2>
-    {/* Implement your complex questions display here */}
-  </div>
-);
-
 const DefaultView = ({ notecards }: { notecards: Notecard[] }) => (
   <div>
     <h2>Default View</h2>
@@ -357,8 +305,6 @@ const Upload: React.FC = () => {
   const [questionCount, setQuestionCount] = useState<number>(5);
   const [difficulty, setDifficulty] = useState<string>('Easy');
   const [selectedQuestionType, setSelectedQuestionType] = useState<string>('true/false');
-  const [progress, setProgress] = useState<number>(0);
-  const [progressStep, setProgressStep] = useState<string>('');
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [shareUrl, setShareUrl] = useState<string>('');
   const [logs, setLogs] = useState<string[]>([]);
