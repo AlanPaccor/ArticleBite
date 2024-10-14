@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Message sent successfully!' }, { status: 200 });
   } catch (error) {
     console.error('Detailed error in API route:', error);
-    return NextResponse.json({ message: 'Failed to send message.', error: error.message }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json({ message: 'Failed to send message.', error: errorMessage }, { status: 500 });
   }
 }
