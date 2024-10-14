@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { doc, setDoc } from 'firebase/firestore'; // Firestore functions
-import Link from 'next/link';
 import { auth, db } from '@/app/lib/firebase-config';
 
 export const metadata = {
@@ -14,7 +13,7 @@ export const metadata = {
 
 export default function RegisterPage() {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
-  const [fullName, setFullName] = useState<string>('');
+  const [fullName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [username, setUsername] = useState<string>(''); // Add username state

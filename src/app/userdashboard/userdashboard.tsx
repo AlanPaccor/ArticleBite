@@ -74,16 +74,19 @@ const UserDashboard: React.FC = () => {
 
   let component;
   switch (activeSection) {
-    case 'History':
+    case 'History': {
       component = <History isDarkMode={isDarkMode} />;
       break;
-    case 'Favorites':
+    }
+    case 'Favorites': {
       component = <Favorites isDarkMode={isDarkMode} favorites={favorites} />;
       break;
-    case 'Settings':
+    }
+    case 'Settings': {
       component = <Account isDarkMode={isDarkMode} />;
       break;
-    default:
+    }
+    default: {
       const gridItems = [
         {
           id: 'article',
@@ -173,6 +176,7 @@ const UserDashboard: React.FC = () => {
           ))}
         </div>
       );
+    }
   }
 
   useEffect(() => {
