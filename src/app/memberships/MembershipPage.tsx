@@ -94,8 +94,8 @@ export const MembershipPage = () => {
               </div>
               <button className={twMerge('btn btn-primary w-full mt-[30px]', inverse === true && 'bg-white text-black')}>{buttonText}</button>
               <ul className='flex flex-col gap-5 mt-8'>
-                {features.map((feature) => (
-                  <li className='text-sm flex items-center gap-4'>
+                {features.map((feature, index) => (
+                  <li key={index} className='text-sm flex items-center gap-4'>
                     <CheckIcon className='h-6 w-6'/>
                     <span>{feature}</span>
                   </li>
