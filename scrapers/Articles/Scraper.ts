@@ -175,7 +175,7 @@ app.post('/scrape', async (req: express.Request, res: express.Response) => {
 
   try {
     console.log('Launching Puppeteer...');
-    const browser = await puppeteer.launch({
+    const browser = await (puppeteer as any).launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
