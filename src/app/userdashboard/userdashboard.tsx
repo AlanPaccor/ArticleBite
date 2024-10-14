@@ -27,6 +27,7 @@ const UserDashboard: React.FC = () => {
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -220,21 +221,21 @@ const UserDashboard: React.FC = () => {
         </div>
 
         <div className="flex flex-col items-center mb-8">
-          {profilePicture ? (
+          {profilePicture && !imageError ? (
             <Image 
               src={profilePicture} 
               alt="User Profile"
               width={80} 
               height={80} 
-              className="rounded-full mb-2 object-cover" 
+              className="rounded-full mb-2 object-cover w-20 h-20"
+              onError={() => setImageError(true)}
             />
           ) : (
-            <div className={`w-16 h-16 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'} flex items-center justify-center mb-2`}>
-              <UserIcon className={`w-8 h-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+            <div className={`w-20 h-20 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'} flex items-center justify-center mb-2`}>
+              <UserIcon className={`w-10 h-10 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`} />
             </div>
           )}
-          <h2 className="text-lg font-semibold">{user?.displayName || 'Guest'}</h2> {/* Change back to displayName */}
-
+          <h2 className="text-lg font-semibold">{user?.displayName || 'Guest'}</h2>
           <button 
             className={`${isDarkMode ? 'text-white' : 'text-gray-900'} mx-4 rounded text-sm`}
             onClick={() => setIsModalOpen(true)}

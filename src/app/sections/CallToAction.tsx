@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import ArrowRight from '../assets/arrow-right.svg';
 import starImage from '../assets/star.png';
 import springImage from '../assets/spring.png';
@@ -35,7 +36,7 @@ export const CallToAction = () => {
           />
           <motion.img 
           src={springImage.src} 
-          alt='Sping Image' 
+          alt='Spring Image' 
           width={360} 
           className='absolute -right-[331px] -top-[19px]'
           style={{
@@ -47,8 +48,8 @@ export const CallToAction = () => {
           <button className="btn btn-primary">Get for free</button>
           <button className="btn btn-text gap-1">
             <span>Learn more</span>
-            <ArrowRight className='h-5 w-5'/>
-            </button>
+            <Image src={ArrowRight} alt="Arrow Right" width={20} height={20} />
+          </button>
         </div>
       </div>
     </section>

@@ -1,9 +1,10 @@
 "use client";
 
+import React from 'react';
+import Image from 'next/image';
 import CheckIcon from '../assets/check.svg';
 import { motion } from 'framer-motion';
 import { twMerge } from "tailwind-merge";
-
 
 const pricingTiers = [
   {
@@ -57,7 +58,7 @@ const pricingTiers = [
   },
 ];
 
-export const Pricing = () => {
+export function Pricing() {
   return (
     <section className="py-24 bg-white">
       <div className="container">
@@ -96,7 +97,7 @@ export const Pricing = () => {
               <ul className='flex flex-col gap-5 mt-8'>
                 {features.map((feature, index) => (
                   <li key={index} className='text-sm flex items-center gap-4'>
-                    <CheckIcon className='h-6 w-6'/>
+                    <Image src={CheckIcon} alt="Check" width={24} height={24} />
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -107,4 +108,4 @@ export const Pricing = () => {
       </div>
     </section>
   );
-};
+}

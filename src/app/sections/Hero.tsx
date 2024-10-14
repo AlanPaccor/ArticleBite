@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import ArrowIcon from '../assets/arrow-right.svg';
 import cogImage from '../assets/cog.png';
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
@@ -19,7 +20,7 @@ export const Hero = () => {
   useMotionValueEvent(translateY, 'change', (latestValue) => console.log(latestValue))
 
   return (
-    <section ref={heroRef} className='pt-8 pb-20 md:pt-5 md:pb-10 bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#183EC2,#EAEEFE_100%)] overflow-x-clip'>
+    <section ref={heroRef} className='pt-8 pb-20 md:pt-5 md:pb-10 bg-[radial-gradient(ellipse_200%_100%_at_bottom_left,#183EC2,#EAEEFE_66%)] overflow-x-clip'>
       <div className="container">
         <div className='md:flex items-center'>
           <div className='md:w-[478px]'>
@@ -32,7 +33,7 @@ export const Hero = () => {
               <button className="btn btn-primary">Get for free</button>
               <button className="btn btn-text gap-1">
                 <span>Learn more</span>
-                <ArrowIcon className="h-5 w-5"/>
+                <Image src={ArrowIcon} alt="Arrow Right" width={20} height={20} />
               </button>
             </div>
           </div>

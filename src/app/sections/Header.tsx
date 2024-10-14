@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
+import Image from "next/image";
 import ArrowRight from '../assets/arrow-right.svg';
 import Logo from '../assets/logosaas.png';
-import Image from "next/image";
 import MenuIcon from '../assets/menu.svg';
 import { auth } from "../lib/firebase-config";
 
@@ -28,12 +28,12 @@ export const Header = () => {
   };
 
   return (
-    <header className='sticky top-0 backdrop-blur-sm z-20'>
+    <header className='sticky top-0 z-20'>
       <div className="flex justify-center items-center py-3 bg-black text-white text-sm gap-3">
         <p className='text-white/60 hidden md:block'>Generate More Than Website Links, Start on PDFs, Videos, and More</p>
         <a href="/memberships" className='inline-flex gap-1 items-center'>
           <p>Get a Membership Now!</p>
-          <ArrowRight className="h-4 w-4 inline-flex justify-center items-center" />
+          <Image src={ArrowRight} alt="Arrow Right" width={16} height={16} />
         </a>
       </div>
       <div className='py-5 bg-white/0'>
@@ -43,7 +43,7 @@ export const Header = () => {
               <Image src={Logo} alt='SaaS Logo' height={40} width={40}/>
             </a>
             <button onClick={toggleMenu} className="md:hidden">
-              <MenuIcon className="h-5 w-5" />
+              <Image src={MenuIcon} alt="Menu" width={20} height={20} />
             </button>
             {/* Desktop Navigation */}
             <nav className='hidden md:flex gap-6 text-black/60 items-center'>
@@ -66,7 +66,7 @@ export const Header = () => {
               )}
             </nav>
             {/* Mobile Navigation */}
-            <nav className={`md:hidden text-white absolute top-full left-0 w-full bg-black/0 backdrop-blur-md transition-all duration-500 ease-in-out ${isMenuOpen ? 'max-h-[400px] opacity-100 visible' : 'max-h-0 opacity-0 invisible'} overflow-hidden`}>
+            <nav className={`md:hidden text-white absolute top-full left-0 w-full bg-black/80 backdrop-blur-md transition-all duration-500 ease-in-out ${isMenuOpen ? 'max-h-[400px] opacity-100 visible' : 'max-h-0 opacity-0 invisible'} overflow-hidden`}>
               <div className="flex flex-col gap-4 p-4">
                 <a href='#' className="py-2 px-3 bg-black/85 rounded-md transform transition-all duration-325 ease-in-out hover:translate-x-2 hover:bg-black/90">About</a>
                 <a href='#' className="py-2 px-3 bg-black/85 rounded-md transform transition-all duration-325 ease-in-out hover:translate-x-2 hover:bg-black/90">Features</a>
