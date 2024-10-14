@@ -4,7 +4,7 @@ import "./globals.css";
 import React from 'react';
 import dynamic from 'next/dynamic';
 
-const ThemeProvider = dynamic(() => import('./contexts/ThemeContext').then(mod => mod.ThemeProvider), { ssr: false });
+const ThemeProvider = dynamic(() => import('./contexts/ThemeContext'), { ssr: false });
 
 const dmSans = DM_Sans({ subsets: ["latin"] });
 
