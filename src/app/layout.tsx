@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
-import clsx from "clsx";
 import React from 'react';
-import { ThemeProvider } from './contexts/ThemeContext';
+import dynamic from 'next/dynamic';
+
+const ThemeProvider = dynamic(() => import('./contexts/ThemeContext').then(mod => mod.ThemeProvider), { ssr: false });
 
 const dmSans = DM_Sans({ subsets: ["latin"] });
 
@@ -14,16 +15,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en" className="relative">
-      <body className={clsx(dmSans.className, "antialiased bg-[#EAEEFE]")}>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+    <html lang="en">
+      <body className={dmSans.className}>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

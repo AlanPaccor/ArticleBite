@@ -1,18 +1,15 @@
-// pages/upload.tsx
+'use client';
 
-import UploadPage from "./upload";
-import Footer from "../../sections/Footer";
-import { SecondHeader } from "@/app/sections/SecondHeader";
+import React from 'react';
+import dynamic from 'next/dynamic';
 
+const UploadPage = dynamic(() => import('./upload'), { ssr: false });
 
-
-export default function Upload() {
+export default function ArticleGenPage() {
   return (
-    <>
-      <SecondHeader />
-      <UploadPage/>
-      <Footer />
-    </>
-  
-)
+    <div>
+      <h1>Article Generator</h1>
+      <UploadPage />
+    </div>
+  );
 }
