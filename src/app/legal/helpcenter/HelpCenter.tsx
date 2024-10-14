@@ -30,7 +30,7 @@ const HelpCenter: React.FC = () => {
       }
     } catch (error) {
       console.error('Error in handleSubmit:', error);
-      setStatus(`Failed to send message: ${error.message}`);
+      setStatus(`Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
