@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer';
-import express from 'express';
+import express, { RequestHandler } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import axios from 'axios';
@@ -147,8 +147,14 @@ answer${questionCount + 1}=empty
 }
 
 // Scrape and summarize content from the provided URL
-app.post('/scrape', async (req: express.Request<{}, {}, { url: string; email: string; questionCount?: number; difficulty?: string; questionType?: string }>, res: express.Response) => {
-  const { url, email, questionCount = 5, difficulty = 'Medium', questionType = 'multiple choice' } = req.body;
+const scrapeHandler: RequestHandler = async (req, res) => {
+  const { url, email, questionCount = 5, difficulty = 'Medium', questionType = 'multiple choice' } = req.body as { 
+    url: string; 
+    email: string; 
+    questionCount?: number; 
+    difficulty?: string; 
+    questionType?: string 
+  };
 
   if (!url || !email) {
     console.log('URL or email is missing from the request.');
@@ -180,7 +186,9 @@ app.post('/scrape', async (req: express.Request<{}, {}, { url: string; email: st
     console.error('Error scraping or summarizing data:', error.message);
     res.status(500).json({ error: 'Failed to scrape and summarize data' });
   }
-});
+};
+
+app.post('/scrape', scrapeHandler);
 
 // Start the server
 const PORT = process.env.PORT || 3001;
