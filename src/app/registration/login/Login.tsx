@@ -3,12 +3,9 @@
 import React from 'react';
 import { useRouter } from 'next/navigation'; 
 import { useState, useEffect } from 'react';
-import { signInWithEmailAndPassword, onAuthStateChanged, Auth } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import Link from 'next/link';
-import * as firebaseApp from '@/firebase/firebaseApp';
-
-// Type assertion
-const auth = firebaseApp.auth as Auth;
+import { auth } from '@/firebase/firebaseConfig';
 
 export default function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
