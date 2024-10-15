@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Make sure there are no conflicting settings here
-  // that might affect the root route
+  reactStrictMode: true,
+  publicRuntimeConfig: {
+    API_URL: process.env.API_URL,
+  },
+  images: {
+    domains: ['firebasestorage.googleapis.com'],
+  },
 };
 
 export default nextConfig;

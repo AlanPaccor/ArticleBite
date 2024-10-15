@@ -1,27 +1,20 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import { SecondHeader } from '@/app/sections/SecondHeader';
-import Footer from '@/app/sections/Footer';
+import React from 'react';
+import Footer from "@/app/sections/Footer";
+import UploadArticle from "./uploadArticle";
+import { SecondHeader } from "@/app/sections/SecondHeader";
+import getConfig from 'next/config';
 
-const UploadPage = dynamic(() => import('./upload'), { 
-  ssr: false,
-  loading: () => <p>Loading...</p>,
-});
-
-const ArticleGenPage: React.FC = () => {
-  useEffect(() => {
-    console.log('ArticleGenPage mounted');
-  }, []);
+export default function ArticleGen() {
+  const { publicRuntimeConfig } = getConfig();
+  const apiUrl = publicRuntimeConfig.API_URL || 'http://localhost:3005';
 
   return (
-    <div>
+    <>
       <SecondHeader />
-      <UploadPage />
+      <UploadArticle apiUrl={apiUrl} />
       <Footer />
-    </div>
+    </>
   );
-};
-
-export default ArticleGenPage;
+}

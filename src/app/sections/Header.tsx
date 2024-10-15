@@ -52,17 +52,13 @@ export const Header = () => {
               <a href='/memberships'>Memberships</a>
               <a href='#'>Reviews</a>
 
-              {/* Show "Login" and "Sign Up" if the user is NOT logged in */}
-              {!isLoggedIn && (
+              {isLoggedIn ? (
+                <a href='/userdashboard' className='dashBoardbtn bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Dashboard</a>
+              ) : (
                 <>
                   <a href='/registration/login'>Login</a>
                   <a href='/registration/signup' className='bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Sign Up</a>
                 </>
-              )}
-              
-              {/* Show "Dashboard" button if the user IS logged in */}
-              {isLoggedIn && (
-                <a href='/userdashboard' className='dashBoardbtn bg-black text-white px-4 py-2 rounded-lg font-medium inline-flex align-items justify-center tracking-tight'>Dashboard</a>
               )}
             </nav>
             {/* Mobile Navigation */}
@@ -73,15 +69,13 @@ export const Header = () => {
                 <a href='/memberships' className="py-2 px-3 bg-black/85 rounded-md transform transition-all duration-500 ease-in-out hover:translate-x-2 hover:bg-black/90">Memberships</a>
                 <a href='#' className="py-2 px-3 bg-black/85 rounded-md transform transition-all duration-325 ease-in-out hover:translate-x-2 hover:bg-black/90">Reviews</a>
 
-                {!isLoggedIn && (
+                {isLoggedIn ? (
+                  <a href='/userdashboard' className="py-2 px-4 dashBoardbtn bg-white text-black rounded-lg font-medium inline-flex items-center justify-center tracking-tight transform transition-all duration-500 ease-in-out hover:scale-105">Dashboard</a>
+                ) : (
                   <>
                     <a href='/registration/login' className="py-2 px-3 bg-black/85 rounded-md transform transition-all duration-500 ease-in-out hover:translate-x-2 hover:bg-black/90">Login</a>
                     <a href='/registration/signup' className="py-2 px-4 bg-white text-black rounded-lg font-medium inline-flex items-center justify-center tracking-tight transform transition-all duration-500 ease-in-out hover:scale-105">Sign Up</a>
                   </>
-                )}
-                
-                {isLoggedIn && (
-                  <a href='/userdashboard' className="py-2 px-4 dashBoardbtn bg-white text-black rounded-lg font-medium inline-flex items-center justify-center tracking-tight transform transition-all duration-500 ease-in-out hover:scale-105">Dashboard</a>
                 )}
               </div>
             </nav>

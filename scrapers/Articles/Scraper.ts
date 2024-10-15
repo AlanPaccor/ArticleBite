@@ -6,13 +6,12 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { createServer } from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Construct the path to the .env file
-const envPath = path.resolve(__dirname, '../.env');
+const envPath = path.resolve(__dirname, '../../.env');
 console.log('Loading .env file from:', envPath);
 
 // Load the .env file
@@ -20,7 +19,9 @@ dotenv.config({ path: envPath });
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'https://stu-rust.vercel.app'
+}));
 
 const openaiApiKey: string | undefined = process.env.OPENAI_API_KEY;
 
@@ -200,8 +201,7 @@ app.post('/scrape', async (req: express.Request, res: express.Response) => {
   }
 });
 
-// Replace the port assignment with the new port
-const PORT = 3005;
+const PORT = process.env.PORT || 3005;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
