@@ -2,11 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "next.config.js",
+      "src": "package.json",
       "use": "@vercel/next"
     }
   ],
   "routes": [
-    // Make sure there are no conflicting rules for the root path
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
   ]
 }
