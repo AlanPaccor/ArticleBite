@@ -10,14 +10,16 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        // If the user is not logged in, redirect to home page
-        router.push("/");
-      }
-    });
+    if (typeof window !== 'undefined' && auth) {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          // If the user is not logged in, redirect to home page
+          router.push("/");
+        }
+      });
 
-    return () => unsubscribe(); // Cleanup subscription on unmount
+      return () => unsubscribe(); // Cleanup subscription on unmount
+    }
   }, [router]);
 
   return (
