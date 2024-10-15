@@ -17,14 +17,16 @@ export default function Login() {
     localStorage.setItem('previousLocation', window.location.pathname);
 
     // Check if the user is already logged in and redirect them to the dashboard
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.push('/userdashboard');
-      }
-    });
+    if (auth) {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          router.push('/userdashboard');
+        }
+      });
 
-    // Cleanup the subscription when the component is unmounted
-    return () => unsubscribe();
+      // Cleanup the subscription when the component is unmounted
+      return () => unsubscribe();
+    }
   }, [router]);
 
   const togglePasswordVisibility = () => {
@@ -33,6 +35,10 @@ export default function Login() {
 
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!auth) {
+      console.error('Auth is not initialized');
+      return;
+    }
     try {
       await signInWithEmailAndPassword(auth, email, password);
       const previousLocation = localStorage.getItem('previousLocation');
