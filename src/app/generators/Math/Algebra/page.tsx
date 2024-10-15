@@ -4,10 +4,8 @@ import React, { useState } from 'react';
 import Footer from "@/app/sections/Footer";
 import UploadAlgebra from "./uploadAlgebra";
 import { SecondHeader } from "@/app/sections/SecondHeader";
-import getConfig from 'next/config';
 
 const AlgebraGenerator: React.FC = () => {
-  const { publicRuntimeConfig } = getConfig();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedContent, setGeneratedContent] = useState('');
@@ -19,7 +17,7 @@ const AlgebraGenerator: React.FC = () => {
     setError(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       const response = await fetch(`${apiUrl}/generate-algebra`, {
         method: 'POST',
         headers: {
@@ -46,7 +44,23 @@ const AlgebraGenerator: React.FC = () => {
     <>
       <SecondHeader />
       <UploadAlgebra />
-      {/* Add form and display logic here */}
+      <form onSubmit={handleSubmit}>
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Enter your algebra prompt here"
+        />
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Generating...' : 'Generate Algebra Content'}
+        </button>
+      </form>
+      {error && <p className="error">{error}</p>}
+      {generatedContent && (
+        <div>
+          <h2>Generated Content:</h2>
+          <pre>{generatedContent}</pre>
+        </div>
+      )}
       <Footer />
     </>
   );
