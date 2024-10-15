@@ -13,21 +13,17 @@ export const firebaseConfig = {
 
 // Initialize Firebase
 let app: FirebaseApp;
+let auth: Auth;
+let db: any;
 
-if (typeof window !== 'undefined') {
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    app = getApps()[0];
-  }
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
 } else {
-  // Server-side initialization
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-  } else {
-    app = getApps()[0];
-  }
+  app = getApps()[0];
+  auth = getAuth(app);
+  db = getFirestore(app);
 }
 
-export const db = getFirestore(app);
-export const auth: Auth = getAuth(app);
+export { app, auth, db };
