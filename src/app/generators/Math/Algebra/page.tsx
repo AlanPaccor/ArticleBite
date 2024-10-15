@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import Footer from "@/app/sections/Footer";
 import UploadAlgebra from "./uploadAlgebra";
