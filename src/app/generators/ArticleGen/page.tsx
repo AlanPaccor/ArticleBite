@@ -5,10 +5,11 @@ import Footer from "@/app/sections/Footer";
 import { uploadArticle } from './uploadArticle';
 import { SecondHeader } from "@/app/sections/SecondHeader";
 import { auth } from '@/firebase/firebaseConfig';
+import { User } from 'firebase/auth';
 
 export default function ArticleGen() {
   const [articleData, setArticleData] = useState({});
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
