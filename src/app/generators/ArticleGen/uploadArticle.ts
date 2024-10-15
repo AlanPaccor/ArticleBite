@@ -1,4 +1,4 @@
-import { db } from '../../../firebase/firebaseConfig';  // Adjust the import path as needed
+import { db } from '../../../firebase/firebaseConfig';
 import { collection, addDoc } from 'firebase/firestore';
 
 export async function uploadArticle(articleData: any) {
