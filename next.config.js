@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  // Make sure there are no redirects or rewrites here that might interfere
+  // Make sure there are no conflicting settings here
+  // that might affect the root route
 };
 
 export default nextConfig;
