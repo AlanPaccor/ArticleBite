@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import Footer from "@/app/sections/Footer";
 import UploadAlgebra from "./uploadAlgebra";
 import { SecondHeader } from "@/app/sections/SecondHeader";
@@ -5,7 +6,10 @@ import getConfig from 'next/config';
 
 const AlgebraGenerator: React.FC = () => {
   const { publicRuntimeConfig } = getConfig();
-  const apiUrl = publicRuntimeConfig.API_URL || 'http://localhost:3001';
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [generatedContent, setGeneratedContent] = useState('');
+  const [prompt, setPrompt] = useState('');
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -40,6 +44,7 @@ const AlgebraGenerator: React.FC = () => {
     <>
       <SecondHeader />
       <UploadAlgebra />
+      {/* Add form and display logic here */}
       <Footer />
     </>
   );
