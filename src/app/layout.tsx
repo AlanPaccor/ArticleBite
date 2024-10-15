@@ -3,7 +3,8 @@ import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import React from 'react';
 import dynamic from 'next/dynamic';
-import Home from "./page";
+import { MantineProvider } from '@mantine/core';
+import { CookiesBanner } from './components/CookiesBanner';
 
 const ThemeProvider = dynamic(() => import('./contexts/ThemeContext'), { ssr: false });
 
@@ -23,8 +24,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={dmSans.className}>
         <ThemeProvider>
-          <Home />
-          {children}
+          <MantineProvider>
+            {children}
+            <CookiesBanner />
+          </MantineProvider>
         </ThemeProvider>
       </body>
     </html>
