@@ -3,17 +3,7 @@ import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { MantineProvider } from '@mantine/core';
-import { Header } from './sections/Header';
-import { Hero } from './sections/Hero';
-import { LogoTicker } from './sections/LogoTicker';
-import { ProductShowcase } from './sections/ProductShowcase';
-import FeaturesDisplay from './sections/features';
-import { Testimonials } from './sections/Testimonials';
-import { CallToAction } from './sections/CallToAction';
-import Footer from './sections/Footer';
-import { CookiesBanner } from './components/CookiesBanner';
-import { Pricing } from './sections/Pricing';
+import Home from "./page";
 
 const ThemeProvider = dynamic(() => import('./contexts/ThemeContext'), { ssr: false });
 
@@ -31,22 +21,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={dmSans.className} style={{ backgroundColor: '#EAEEFE' }}>
+      <body className={dmSans.className}>
         <ThemeProvider>
-        <Header />
-        <Hero />
-        <LogoTicker />
-        <ProductShowcase />
-        <FeaturesDisplay />
-        <Pricing />
-        <Testimonials />
-        <CallToAction />
-        <Footer />
-        <MantineProvider>
-          <CookiesBanner />
-        </MantineProvider>
-            {children}
-          </ThemeProvider>
+          <Home />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )
