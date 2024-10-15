@@ -1,6 +1,6 @@
 export default function FeaturesDisplay() {
   return (
-    <section className="relative before:absolute before:inset-0 before:-z-20 before:bg-gradient-to-b from-[#D2DCFF] to-white">
+    <section className="relative before:absolute before:inset-0 before:-z-20 bg-gradient-to-b from-[#D2DCFF] to-[#ffffff]">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="py-12 md:py-20">
           {/* Section header */}
