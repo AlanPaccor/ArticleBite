@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import Link from 'next/link';
-import { auth } from '@/app/lib/firebase-config';
+import { auth } from '@/firebase/firebaseApp';
 
 export default function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
