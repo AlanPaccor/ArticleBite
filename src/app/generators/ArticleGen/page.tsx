@@ -12,11 +12,13 @@ export default function ArticleGen() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
-    });
+    if (auth) {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        setUser(user);
+      });
 
-    return () => unsubscribe();
+      return () => unsubscribe();
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
