@@ -1,15 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Footer from "@/app/sections/Footer";
 import { uploadArticle } from './uploadArticle';
 import { SecondHeader } from "@/app/sections/SecondHeader";
+import { auth } from '@/firebase/firebaseConfig';
 
 export default function ArticleGen() {
   const [articleData, setArticleData] = useState({});
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
     try {
       const articleId = await uploadArticle(articleData);
       console.log('Article uploaded successfully with ID:', articleId);
@@ -23,10 +37,14 @@ export default function ArticleGen() {
   return (
     <>
       <SecondHeader />
-      <form onSubmit={handleSubmit}>
-        {/* Add your form fields here */}
-        <button type="submit">Upload Article</button>
-      </form>
+      {user ? (
+        <form onSubmit={handleSubmit}>
+          {/* Add your form fields here */}
+          <button type="submit">Upload Article</button>
+        </form>
+      ) : (
+        <p>Please log in to upload articles.</p>
+      )}
       <Footer />
     </>
   );
