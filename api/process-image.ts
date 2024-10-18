@@ -1,262 +1,37 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { createWorker, WorkerOptions } from 'tesseract.js';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { summarizeText } from './scrape'; // This import should now work correctly
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import { createWorker } from 'tesseract.js';
+import { summarizeText } from './scrape';
+import formidable from 'formidable';
 
 export const config = {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   api: {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     bodyParser: false,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  },.
-
-
-
-
-
-
-
-
-
-
-
-
-
+  },
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   if (req.method !== 'POST') {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     return res.status(405).json({ error: 'Method Not Allowed' });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   try {
+    const form = new formidable.IncomingForm();
     const { fields, files } = await new Promise((resolve, reject) => {
-      const form = new (require('formidable').IncomingForm)();
       form.parse(req, (err, fields, files) => {
         if (err) return reject(err);
         resolve({ fields, files });
       });
     });
 
-    const file = files.file;
+    const file = files.file as formidable.File;
     if (!file) {
       return res.status(400).json({ error: 'No file provided' });
     }
 
-    const workerOptions: WorkerOptions = {
-      logger: m => console.log(m)
-    };
-    const worker = await createWorker(workerOptions);
+    const worker = await createWorker();
     await worker.loadLanguage('eng');
     await worker.initialize('eng');
-    const { data: { text } } = await worker.recognize(file.path);
+    const { data: { text } } = await worker.recognize(file.filepath);
     await worker.terminate();
 
     const email = fields.email as string;
@@ -272,42 +47,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(500).json({ error: 'Failed to process image' });
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
