@@ -9,10 +9,8 @@ import { collection, addDoc } from 'firebase/firestore';
 import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
 import { Loader, Link, File, Video, Image, Youtube, ChevronLeft, ChevronRight } from 'lucide-react';
 import OpenAI from 'openai';
-import Tesseract from 'tesseract.js';
-import { MathJaxContext, MathJax } from 'better-react-mathjax';
-import toast, { Toaster } from 'react-hot-toast'; // Add this import
-import { useTheme } from '../../../contexts/ThemeContext'; // Add this import
+import toast, { Toaster } from 'react-hot-toast';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 type UploadType = 'png' | 'file' | 'mp4' | 'youtube' | 'url';
 
@@ -49,50 +47,6 @@ const Card = ({ objective, explanation, isFlipped, onClick }: { objective: strin
     </div>
   </div>
 );
-
-const Carousel = ({ children }: { children: React.ReactNode }) => {
-  const [active, setActive] = useState(0);
-  const count = React.Children.count(children);
-  const MAX_VISIBILITY = 3;
-
-  return (
-    <div className="carousel relative w-full h-96 perspective-500 transform-style-preserve-3d flex justify-center items-center">
-      {active > 0 && (
-        <button className="nav left absolute top-1/2 left-0 transform -translate-y-1/2 text-5xl text-blue-500 z-10 cursor-pointer" onClick={() => setActive(i => i - 1)}>
-          <TiChevronLeftOutline />
-        </button>
-      )}
-      {React.Children.map(children, (child, i) => (
-        <div
-          className="card-container absolute w-80 h-96 transition-all duration-300 ease-out"
-          style={{
-            '--active': i === active ? 1 : 0,
-            '--offset': (active - i) / 3,
-            '--direction': Math.sign(active - i),
-            '--abs-offset': Math.abs(active - i) / 3,
-            pointerEvents: active === i ? 'auto' : 'none',
-            opacity: Math.abs(active - i) >= MAX_VISIBILITY ? 0 : 1,
-            display: Math.abs(active - i) > MAX_VISIBILITY ? 'none' : 'block',
-            transform: `
-              rotateY(calc(var(--offset) * 50deg)) 
-              scaleY(calc(1 + var(--abs-offset) * -0.4))
-              translateZ(calc(var(--abs-offset) * -30rem))
-              translateX(calc(var(--direction) * -5rem))
-            `,
-            filter: `blur(calc(var(--abs-offset) * 1rem))`,
-          } as React.CSSProperties}
-        >
-          {child}
-        </div>
-      ))}
-      {active < count - 1 && (
-        <button className="nav right absolute top-1/2 right-0 transform -translate-y-1/2 text-5xl text-blue-500 z-10 cursor-pointer" onClick={() => setActive(i => i + 1)}>
-          <TiChevronRightOutline />
-        </button>
-      )}
-    </div>
-  );
-};
 
 const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -170,11 +124,6 @@ const CarouselView = ({ notecards }: { notecards: Notecard[] }) => {
     </div>
   );
 };
-
-interface MultipleChoiceQuestion extends Notecard {
-  choices: string[];
-  correctAnswer: string;
-}
 
 const MultipleChoiceView = ({ notecards }: { notecards: Notecard[] }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string }>({});
@@ -359,12 +308,6 @@ const UploadAlgebra: React.FC = () => {
   const [customQuestionCount, setCustomQuestionCount] = useState<string>('');
   const { isDarkMode } = useTheme();
   const router = useRouter();
-
-  const demoNotecards: Notecard[] = [
-    { objective: "What is 2 + 2?", explanation: "The answer is 4." },
-    { objective: "Solve for x: 3x + 5 = 14", explanation: "x = 3" },
-    { objective: "What is the square root of 16?", explanation: "The square root of 16 is 4." },
-  ];
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -659,6 +602,8 @@ const UploadAlgebra: React.FC = () => {
             className={`w-full border p-2 rounded ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'}`}
           />
         );
+      default:
+        return null;
     }
   };
 
