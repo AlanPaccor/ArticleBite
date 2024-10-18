@@ -6,7 +6,6 @@ import axios from 'axios';
 import { User } from 'firebase/auth';
 import { auth, db } from '../../../lib/firebase-config';
 import { collection, addDoc } from 'firebase/firestore';
-import { TiChevronLeftOutline, TiChevronRightOutline } from 'react-icons/ti';
 import { Loader, Link, File, Video, Image, Youtube, ChevronLeft, ChevronRight } from 'lucide-react';
 import OpenAI from 'openai';
 import toast, { Toaster } from 'react-hot-toast';
