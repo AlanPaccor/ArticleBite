@@ -535,7 +535,7 @@ const UploadAlgebra: React.FC = () => {
         console.log('Sending request with formData:', Object.fromEntries(formData));
 
         const response = await axios.post<{ extractedText: string }>(
-          'http://localhost:3001/process-file',
+          '/api/scrape',
           formData,
           {
             headers: {
