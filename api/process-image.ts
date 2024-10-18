@@ -2,15 +2,31 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 
 
 
-import formidable from 'formidable';
 
 
 
-import { createWorker } from 'tesseract.js';
 
 
 
-import fs from 'fs';
+
+
+
+
+
+
+import { createWorker, WorkerOptions } from 'tesseract.js';
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -22,7 +38,43 @@ import { summarizeText } from './scrape'; // This import should now work correct
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const config = {
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -30,11 +82,45 @@ export const config = {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
     bodyParser: false,
 
 
 
-  },
+
+
+
+
+
+
+
+
+
+
+
+
+  },.
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -46,7 +132,43 @@ export const config = {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -54,7 +176,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
     return res.status(405).json({ error: 'Method Not Allowed' });
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -66,23 +212,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 
 
-  const form = new formidable.IncomingForm();
-
-
-
-  form.parse(req, async (err, fields, files) => {
-
-
-
-    if (err) {
-
-
-
-      return res.status(500).json({ error: 'Error parsing form data' });
-
-
-
-    }
 
 
 
@@ -90,19 +219,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 
 
-    const file = files.file as formidable.File;
-
-
-
-    if (!file) {
-
-
-
-      return res.status(400).json({ error: 'No file provided' });
-
-
-
-    }
 
 
 
@@ -110,97 +226,82 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 
 
-    try {
 
 
 
-      const worker = await createWorker({
-        logger: m => console.log(m)
+
+
+
+
+
+
+
+  try {
+    const { fields, files } = await new Promise((resolve, reject) => {
+      const form = new (require('formidable').IncomingForm)();
+      form.parse(req, (err, fields, files) => {
+        if (err) return reject(err);
+        resolve({ fields, files });
       });
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
-      const { data: { text } } = await worker.recognize(file.filepath);
-      await worker.terminate();
+    });
 
-
-
-
-
-
-
-      // Extract other fields
-
-
-
-      const email = fields.email as string;
-
-
-
-      const questionCount = parseInt(fields.questionCount as string, 10);
-
-
-
-      const difficulty = fields.difficulty as string;
-
-
-
-      const questionType = fields.questionType as string;
-
-
-
-
-
-
-
-      // Summarize the extracted text
-
-
-
-      const summarizedText = await summarizeText(text, questionCount, difficulty, questionType);
-
-
-
-
-
-
-
-      res.status(200).json({ summarizedText });
-
-
-
-    } catch (error: any) {
-
-
-
-      console.error('Error processing image:', error.message);
-
-
-
-      res.status(500).json({ error: 'Failed to process image' });
-
-
-
-    } finally {
-
-
-
-      // Clean up the temporary file
-
-
-
-      fs.unlinkSync(file.filepath);
-
-
-
+    const file = files.file;
+    if (!file) {
+      return res.status(400).json({ error: 'No file provided' });
     }
 
+    const workerOptions: WorkerOptions = {
+      logger: m => console.log(m)
+    };
+    const worker = await createWorker(workerOptions);
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    const { data: { text } } = await worker.recognize(file.path);
+    await worker.terminate();
 
+    const email = fields.email as string;
+    const questionCount = parseInt(fields.questionCount as string, 10);
+    const difficulty = fields.difficulty as string;
+    const questionType = fields.questionType as string;
 
-  });
+    const summarizedText = await summarizeText(text, questionCount, difficulty, questionType);
 
-
-
+    res.status(200).json({ summarizedText });
+  } catch (error: any) {
+    console.error('Error processing image:', error.message);
+    res.status(500).json({ error: 'Failed to process image' });
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
