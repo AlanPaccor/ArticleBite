@@ -34,15 +34,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'No file provided' });
     }
 
-    const worker = await createWorker();
+    const worker = await createWorker('eng');
 
-    worker.setParameters({
+    await worker.setParameters({
       tessedit_ocr_engine_mode: 3,
     });
 
-    await worker.loadLanguage('eng');
-    await worker.initialize('eng');
-    
     const { data: { text } } = await worker.recognize(file.filepath);
     await worker.terminate();
 
