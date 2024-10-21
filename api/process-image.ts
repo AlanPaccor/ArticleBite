@@ -38,10 +38,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await worker.loadLanguage('eng');
     await worker.initialize('eng');
 
-    await worker.setParameters({
-      tessedit_ocr_engine_mode: 3,
-    });
-
     const { data: { text } } = await worker.recognize(file.filepath);
     await worker.terminate();
 
