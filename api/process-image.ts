@@ -1,221 +1,56 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
-
-
-
-import { createWorker } from 'tesseract.js';
-
-
-
-import { summarizeText } from './scrape';
-
-
-
-import formidable from 'formidable';
-
-
-
-
-
-
-
-export const config = {
-
-
-
-  api: {
-
-
-
-    bodyParser: false,
-
-
-
-  },
-
-
-
-];
-
-
-
-
-
-
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-
-
-
-  if (req.method !== 'POST') {
-
-
-
-    return res.status(405).json({ error: 'Method Not Allowed' });
-
-
-
-  }
-
-
-
-
-
-
-
-  try {
-
-
-
-    const form = new formidable.IncomingForm();
-
-
-
-    const { fields, files } = await new Promise((resolve, reject) => {
-
-
-
-      form.parse(req, (err, fields, files) => {
-
-
-
-        if (err) return reject(err);
-
-
-
-        resolve({ fields, files } as { fields: formidable.Fields; files: formidable.Files });
-
-
-
-      });
-
-
-
-    ]);
-
-
-
-
-
-
-
-    const file = files.file as formidable.File;
-
-
-
-    if (!file) {
-
-
-
-      return res.status(400).json({ error: 'No file provided' });
-
-
-
-    }
-
-
-
-
-
-
-
-    const worker = await createWorker();
-
-    // If you still want to log messages, you can do it separately:
-    worker.on('progress', (progress) => {
-      console.log(progress);
-    });
-
-    await worker.loadLanguage('eng');
-
-    await worker.initialize('eng');
-
-    const { data: { text } } = await worker.recognize(file.filepath);
-
-    await worker.terminate();
-
-
-
-
-
-
-
-    const email = fields.email as string;
-
-
-
-
-
-
-
-    const questionCount = parseInt(fields.questionCount as string, 10);
-
-
-
-
-
-
-
-    const difficulty = fields.difficulty as string;
-
-
-
-
-
-
-
-    const questionType = fields.questionType as string;
-
-
-
-
-
-
-
-    const summarizedText = await summarizeText(text, questionCount, difficulty, questionType);
-
-
-
-
-
-
-
-    res.status(200).json({ summarizedText });
-
-
-
-
-
-
-
-  } catch (error: any) {
-
-
-
-    console.error('Error processing image:', error.message);
-
-
-
-
-
-
-
-    res.status(500).json({ error: 'Failed to process image' });
-
-
-
-
-
-
-
-  }
-
-
-
-}
-
-
-
-
-
-
-
+import { VercelRequest, VercelResponse } from '@vercel/node';
+import { createWorker } from 'tesseract.js';
+import { summarizeText } from './scrape';
+import formidable from 'formidable';
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  try {
+    const form = new formidable.IncomingForm();
+    
+    const { fields, files } = await new Promise((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) return reject(err);
+        resolve({ fields, files } as { fields: formidable.Fields; files: formidable.Files });
+      });
+    });
+
+    const file = files.file as formidable.File;
+    if (!file) {
+      return res.status(400).json({ error: 'No file provided' });
+    }
+
+    // Create worker with proper type configuration
+    const worker = await createWorker({
+      logger: progress => console.log(progress)
+    } as any); // Using type assertion as temporary fix
+
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    
+    const { data: { text } } = await worker.recognize(file.filepath);
+    await worker.terminate();
+
+    const email = fields.email as string;
+    const questionCount = parseInt(fields.questionCount as string, 10);
+    const difficulty = fields.difficulty as string;
+    const questionType = fields.questionType as string;
+
+    const summarizedText = await summarizeText(text, questionCount, difficulty, questionType);
+
+    res.status(200).json({ summarizedText });
+
+  } catch (error: any) {
+    console.error('Error processing image:', error.message);
+    res.status(500).json({ error: 'Failed to process image' });
+  }
+}
