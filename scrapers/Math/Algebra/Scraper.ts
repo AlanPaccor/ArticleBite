@@ -440,7 +440,9 @@ app.post('/process-file', upload.single('file'), async (req: Request, res: Respo
         }
         console.log('Processing PNG file...');
         try {
-          const worker = await createWorker('eng');
+          const worker = await createWorker();
+          await worker.loadLanguage('eng');
+          await worker.initialize('eng');
           const { data: { text } } = await worker.recognize(req.file.buffer);
           await worker.terminate();
           extractedText = text;
