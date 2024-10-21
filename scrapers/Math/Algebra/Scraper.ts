@@ -388,7 +388,9 @@ app.post('/extract-text', upload.single('file'), async (req: Request, res: Respo
     console.log('File mimetype:', req.file.mimetype);
     console.log('File size:', req.file.size);
 
-    const worker = await createWorker('eng');
+    const worker = await createWorker();
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
     const { data: { text } } = await worker.recognize(req.file.buffer);
     await worker.terminate();
 
