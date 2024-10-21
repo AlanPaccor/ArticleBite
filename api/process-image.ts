@@ -9,6 +9,11 @@ export const config = {
   },
 };
 
+interface ParsedForm {
+  fields: formidable.Fields;
+  files: formidable.Files;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -17,10 +22,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const form = new formidable.IncomingForm();
     
-    const { fields, files } = await new Promise((resolve, reject) => {
+    const { fields, files } = await new Promise<ParsedForm>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) return reject(err);
-        resolve({ fields, files } as { fields: formidable.Fields; files: formidable.Files });
+        resolve({ fields, files });
       });
     });
 
@@ -29,10 +34,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'No file provided' });
     }
 
-    // Create worker with proper type configuration
-    const worker = await createWorker({
-      logger: progress => console.log(progress)
-    } as any); // Using type assertion as temporary fix
+    const worker = await createWorker();
+
+    worker.setParameters({
+      tessedit_ocr_engine_mode: 3,
+    });
 
     await worker.loadLanguage('eng');
     await worker.initialize('eng');
