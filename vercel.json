@@ -6,7 +6,7 @@
 
     "api/*.ts": {
 
-      "runtime": "vercel-node@1.8.5"
+      "runtime": "@vercel/node"
 
     }
 
