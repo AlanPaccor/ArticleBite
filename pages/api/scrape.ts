@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import OpenAI from 'openai';
+import chromium from 'chrome-aws-lambda';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -9,9 +10,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     const { url, email, questionCount, difficulty, questionType } = req.body;
 
+    if (!url) {
+      return res.status(400).json({ error: 'URL is required' });
+    }
+
     try {
-      const { data } = await axios.get(url);
-      const $ = cheerio.load(data);
+      console.log('Launching Puppeteer...');
+      const browser = await chromium.puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath,
+        headless: true,
+      });
+
+      const page = await browser.newPage();
+      await page.goto(url, { waitUntil: 'networkidle0' });
+      const content = await page.content();
+      await browser.close();
+
+      const $ = cheerio.load(content);
       const text = $('body').text();
 
       const summarizedText = await generateQuestions(text, questionCount, difficulty, questionType);
