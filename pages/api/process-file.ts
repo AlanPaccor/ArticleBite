@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
-import { createWorker } from 'tesseract.js';
 import { processFile } from '../../utils/fileProcessing';
 
 export const config = {
@@ -26,9 +25,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const questionType = fields.questionType as string;
 
       try {
-        const result = await processFile(uploadType, file, email, questionCount, difficulty, questionType);
+        const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
+          const chunks: Buffer[] = [];
+          file.stream.on('data', (chunk) => chunks.push(chunk));
+          file.stream.on('end', () => resolve(Buffer.concat(chunks)));
+          file.stream.on('error', reject);
+        });
+
+        const result = await processFile(uploadType, { ...file, buffer: fileBuffer }, email, questionCount, difficulty, questionType);
         res.status(200).json(result);
       } catch (error) {
+        console.error('Error processing file:', error);
         res.status(500).json({ error: 'Error processing file' });
       }
     });

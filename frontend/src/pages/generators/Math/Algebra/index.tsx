@@ -50,16 +50,32 @@ const UploadAlgebra: React.FC<UploadAlgebraProps> = ({ user }) => {
     }
 
     try {
-      const response = await axios.post(`/api/process-file`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      let response;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api'; // Use environment variable or default to '/api'
+      
+      if (uploadType === 'url') {
+        response = await axios.post(`${apiUrl}/scrape`, {
+          url: input,
+          email: user.email,
+          questionCount,
+          difficulty,
+          questionType: selectedQuestionType
+        });
+      } else {
+        response = await axios.post(`${apiUrl}/process-file`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
 
       console.log(response.data);
       // Handle the response (e.g., update state, show results)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in API call:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
       // Handle the error (e.g., show an error message to the user)
     }
   };

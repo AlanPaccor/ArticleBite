@@ -1,5 +1,4 @@
 import { createWorker } from 'tesseract.js';
-import { readFileSync } from 'fs';
 import pdf from 'pdf-parse';
 import { YoutubeTranscript } from 'youtube-transcript';
 import OpenAI from 'openai';
@@ -14,31 +13,27 @@ export async function processFile(uploadType: string, file: any, email: string, 
       const worker = await createWorker();
       await worker.loadLanguage('eng');
       await worker.initialize('eng');
-      const { data: { text } } = await worker.recognize(readFileSync(file.path));
+      const { data: { text } } = await worker.recognize(file.buffer);
       await worker.terminate();
       extractedText = text;
       break;
     case 'file':
       if (file.mimetype === 'application/pdf') {
-        const dataBuffer = readFileSync(file.path);
-        const pdfData = await pdf(dataBuffer);
+        const pdfData = await pdf(file.buffer);
         extractedText = pdfData.text;
       } else if (file.mimetype === 'text/plain') {
-        extractedText = readFileSync(file.path, 'utf-8');
+        extractedText = file.buffer.toString('utf-8');
       }
       break;
     case 'mp4':
-      // Implement MP4 processing here
+      // Implement MP4 processing here (you may need to use a video processing library)
       break;
     case 'youtube':
-      const videoId = extractVideoId(file.path);
+      const videoId = extractVideoId(file);
       if (videoId) {
         const transcript = await YoutubeTranscript.fetchTranscript(videoId);
         extractedText = transcript.map(item => item.text).join(' ');
       }
-      break;
-    case 'url':
-      // Implement URL scraping here
       break;
   }
 
