@@ -30,11 +30,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 async function generateQuestions(text: string, questionCount: number, difficulty: string, questionType: string) {
   const prompt = `Generate ${questionCount} ${difficulty} ${questionType} questions about algebra from the following text:\n\n${text}`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: 1000,
-  });
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1000,
+    });
 
-  return response.choices[0].message.content;
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error('Error generating questions:', error);
+    throw new Error('Failed to generate questions');
+  }
 }

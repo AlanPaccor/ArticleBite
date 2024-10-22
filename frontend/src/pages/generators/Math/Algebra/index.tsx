@@ -51,7 +51,7 @@ const UploadAlgebra: React.FC<UploadAlgebraProps> = ({ user }) => {
 
     try {
       let response;
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api'; // Use environment variable or default to '/api'
+      const apiUrl = '/api'; // Always use relative path for API calls
       
       if (uploadType === 'url') {
         response = await axios.post(`${apiUrl}/scrape`, {
@@ -60,6 +60,12 @@ const UploadAlgebra: React.FC<UploadAlgebraProps> = ({ user }) => {
           questionCount,
           difficulty,
           questionType: selectedQuestionType
+        });
+      } else if (uploadType === 'png') {
+        response = await axios.post(`${apiUrl}/process-image`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         });
       } else {
         response = await axios.post(`${apiUrl}/process-file`, formData, {
