@@ -51,10 +51,9 @@ const UploadAlgebra: React.FC<UploadAlgebraProps> = ({ user }) => {
 
     try {
       let response;
-      const apiUrl = '/api'; // Always use relative path for API calls
       
       if (uploadType === 'url') {
-        response = await axios.post(`${apiUrl}/scrape`, {
+        response = await axios.post('/api/scrape', {
           url: input,
           email: user.email,
           questionCount,
@@ -62,13 +61,13 @@ const UploadAlgebra: React.FC<UploadAlgebraProps> = ({ user }) => {
           questionType: selectedQuestionType
         });
       } else if (uploadType === 'png') {
-        response = await axios.post(`${apiUrl}/process-image`, formData, {
+        response = await axios.post('/api/process-image', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
       } else {
-        response = await axios.post(`${apiUrl}/process-file`, formData, {
+        response = await axios.post('/api/process-file', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
