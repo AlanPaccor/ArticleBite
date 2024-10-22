@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import { processFile } from '../../utils/fileProcessing';
+import { File } from 'formidable';
+import fs from 'fs';
 
 export const config = {
   api: {
@@ -18,25 +20,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const uploadType = fields.uploadType as string;
-      const file = files.file as formidable.File;
+      const file = files.file as File;
       const email = fields.email as string;
       const questionCount = parseInt(fields.questionCount as string);
       const difficulty = fields.difficulty as string;
       const questionType = fields.questionType as string;
 
       try {
-        const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
-          const chunks: Buffer[] = [];
-          file.stream.on('data', (chunk) => chunks.push(chunk));
-          file.stream.on('end', () => resolve(Buffer.concat(chunks)));
-          file.stream.on('error', reject);
-        });
+        const fileBuffer = await fs.promises.readFile(file.filepath);
 
         const result = await processFile(uploadType, { ...file, buffer: fileBuffer }, email, questionCount, difficulty, questionType);
         res.status(200).json(result);
       } catch (error) {
         console.error('Error processing file:', error);
         res.status(500).json({ error: 'Error processing file' });
+      } finally {
+        // Clean up the temp file
+        if (file.filepath) {
+          fs.unlink(file.filepath, (err) => {
+            if (err) console.error('Error deleting temp file:', err);
+          });
+        }
       }
     });
   } else {
