@@ -24,6 +24,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const difficulty = fields.difficulty as string;
       const questionType = fields.questionType as string;
 
+      if (!file) {
+        res.status(400).json({ error: 'No file uploaded' });
+        return;
+      }
+
       try {
         const worker = await createWorker();
         await worker.loadLanguage('eng');
