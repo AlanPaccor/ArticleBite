@@ -39,7 +39,9 @@ dotenv.config({ path: '../.env' });
 const app = express();
 app.use(bodyParser.json());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://stu-rust.vercel.app/generators/Math/Algebra'
+  origin: process.env.FRONTEND_URL || 'https://stu-rust.vercel.app',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 const openaiApiKey: string | undefined = process.env.OPENAI_API_KEY;
